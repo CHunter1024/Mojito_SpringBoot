@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="../../plugins/element-ui/index.css"/>
+  <link rel="stylesheet" href="../../styles/common.css"/>
+  <link rel="stylesheet" href="../../styles/page.css"/>
+</head>
+<body>
+  <div class="dashboard-container" id="category-app">
+    <div class="container">
+      <div class="tableBar" style="display: inline-block">
+        <el-button type="primary" @click="addClass">+ 新增分类</el-button>
+      </div>
+      <el-table :data="tableData" class="tableBox" height="425">
+        <el-table-column prop="name" label="分类名称" align="center"></el-table-column>
+        <el-table-column label="分类类型" align="center">
+          <template slot-scope="scope">
+            <span>{{scope.row.type === 0 ? '商品分类' : '套餐分类'}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="sort" label="排序" align="center"></el-table-column>
+        <el-table-column prop="updateTime" label="操作时间" align="center"></el-table-column>
+        <el-table-column label="操作" align="center">
+          <template slot-scope="scope">
+            <el-button type="text" class="blueBug" @click="editClass(scope.row)">修改</el-button>
+            <el-button type="text" class="delBut non" @click="deleteClass(scope.row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+        class="pageList"
+        :page-sizes="[10, 20, 30, 40]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="counts"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      ></el-pagination>
+    </div>
+    <el-dialog :title="title" :visible.sync="dialogVisible" width="30%" center
+               :close-on-click-modal="false" @closed="resetForm">
+      <el-form
+        ref="ruleForm"
+        :model="ruleForm"
+        :rules="rules"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="名称" prop="name">
+          <el-input v-model.trim="ruleForm.name" placeholder="请输入分类名称" maxlength="60" />
+        </el-form-item>
+        <el-form-item label="类型" prop="type">
+          <el-radio-group v-model="ruleForm.type">
+            <el-radio label="商品分类"></el-radio>
+            <el-radio label="套餐分类"></el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="排序" prop="sort">
+          <el-input-number v-model="ruleForm.sort" controls-position="right" :min="1" step-strictly />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button size="medium" @click="dialogVisible=false">取消</el-button>
+        <el-button type="primary" size="medium" @click="submitForm('ruleForm',false)">保存</el-button>
+        <el-button v-if="action=='add'" type="primary" size="medium" class="continue"
+                   @click="submitForm('ruleForm',true)">保存并继续添加</el-button>
+      </span>
+    </el-dialog>
+  </div>
+  <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+  <script src="../../plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../../plugins/element-ui/index.js"></script>
+  <!-- 引入axios -->
+  <script src="../../plugins/axios/axios.min.js"></script>
+  <script src="../../js/request.js"></script>
+  <script src="../../api/category.js"></script>
+  <script>
+    new Vue({
+      el: '#category-app',
+      data() {
+        return {
+          action: '',
+          counts: 0,
+          page: 1,
+          pageSize: 10,
+          tableData: [],
+          title: '',
+          dialogVisible: false,
+          ruleForm: {
+            name: '',
+            type: '商品分类',
+            sort: 1
+          }
+        }
+      },
+      computed: {
+        rules() {
+          return {
+            name: [{required: true, message: '请输入分类名称', trigger: 'blur'}],
+            sort: [{required: true, message: '请输入序号', trigger: 'blur'}]
+          }
+        }
+      },
+      created() {
+        let pageInfo = window.sessionStorage.getItem("pageInfo")
+        if (pageInfo) {
+          pageInfo = JSON.parse(pageInfo)
+          this.page = pageInfo.page
+          this.pageSize = pageInfo.pageSize
+        }
+        this.init()
+      },
+      methods: {
+        init() {
+          const params = {
+            page: this.page,
+            pageSize: this.pageSize
+          }
+          getCategoryPage(params).then(res => {
+            if (res.code === 1) {
+              this.tableData = res.data.records
+              this.counts = res.data.total
+              this.ruleForm.sort = this.counts + 1
+            } else {
+              this.$message.error(res.msg)
+            }
+          })
+        },
+         // 添加
+        addClass() {
+          this.title = '新增分类'
+          this.action = 'add'
+          this.dialogVisible = true
+        },
+        // 修改
+        editClass(data) {
+          this.title = '修改分类'
+          this.action = 'edit'
+          // 这里使用深拷贝的方式回显数据
+          this.ruleForm = JSON.parse(JSON.stringify(data))  // 包含id
+          this.ruleForm.type = this.ruleForm.type === 0 ? '商品分类' : '套餐分类'
+          this.dialogVisible = true
+        },
+        // 删除
+        deleteClass(id) {
+          this.$confirm('确认删除该分类？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            deleteCategory(id).then(res => {
+              if (res.code === 1) {
+                this.$message.success('删除成功')
+                this.handleDeleteSuccess()
+              } else {
+                this.$message.error(`${res.msg}，删除失败`)
+              }
+            })
+          }).catch(() => {
+          })
+        },
+        // 数据提交
+        submitForm(formName, keepOpen) {
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              const params = {
+                ...this.ruleForm,
+                type: this.ruleForm.type === '商品分类' ? 0 : 1
+              }
+              if (this.action === 'add') {
+                addCategory(params).then(res => {
+                  if (res.code === 1) {
+                    this.$message.success('添加成功')
+                    if (keepOpen) {
+                      this.resetForm()
+                    } else {
+                      this.dialogVisible = false
+                    }
+                    this.init()
+                  } else {
+                    this.$message.error(`${res.msg}，添加失败`)
+                  }
+                })
+              } else {
+                editCategory(params).then(res => {
+                  if (res.code === 1) {
+                    this.$message.success('修改成功')
+                    this.dialogVisible = false
+                    this.init()
+                  } else {
+                    this.$message.error(`${res.msg}，修改失败`)
+                  }
+                })
+              }
+            } else {
+              return false
+            }
+          })
+        },
+        // 重置表单内容
+        resetForm() {
+          this.$refs.ruleForm.clearValidate()  // 移除表单项的校验结果
+          this.ruleForm = {
+            name: '',
+            type: '商品分类',
+            sort: this.counts + 1
+          }
+        },
+        handleDeleteSuccess() {
+          if (this.tableData.length === 1) {
+            this.page--
+            this.savePageInfo()
+          }
+          this.init()
+        },
+        handleSizeChange (val) {
+          this.pageSize = val
+          this.init()
+          this.savePageInfo()
+        },
+        handleCurrentChange (val) {
+          this.page = val
+          this.init()
+          this.savePageInfo()
+        },
+        savePageInfo() {
+          sessionStorage.setItem("pageInfo", JSON.stringify({
+            page: this.page,
+            pageSize: this.pageSize
+          }))
+        }
+      }
+    })
+  </script>
+</body>
+</html>

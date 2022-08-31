@@ -1,0 +1,85 @@
+#login .divHead {
+  width: 100%;
+  height: 46rem;
+  background: #ffffff;
+  position: relative;
+}
+#login .divHead .divTitle {
+  width: 100%;
+  font-size: 16rem;
+  text-align: center;
+  line-height: 46rem;
+  letter-spacing: 0;
+  position: absolute;
+}
+#login .divHead .divTitle i {
+  position: absolute;
+  font-size: 18rem;
+  right: 10rem;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+#login .logo {
+  padding-top: 50rem;
+  padding-bottom: 70rem;
+  text-align: center;
+}
+#login .logo img {
+  width: 210rem;
+  height: 70rem;
+}
+
+#login .divContainer {
+  width: 356rem;
+  opacity: 1;
+  background: #ffffff;
+  border-radius: 8rem;
+  margin: 10rem auto 0;
+  position: relative;
+}
+#login .divContainer .van-field {
+  height: 60rem;
+  align-items: center;
+  border-radius: 8rem;
+}
+#login .divContainer .divSplit {
+  height: 1rem;
+  background-color: #efefef;
+  border: 0;
+  margin-left: 10rem;
+  margin-right: 10rem;
+}
+#login .divContainer .email span {
+  font-size: 14rem;
+}
+#login .divContainer .code .van-button {
+  background-color: #ffffff;
+  color: #ffc200;
+  border: none;
+  font-size: 14rem;
+}
+#login .divContainer .code .van-button--disabled {
+  opacity: 1;
+  color: #c0c4cc;
+}
+#login .divContainer .code .van-button::before {
+  background-color: #ffffff;
+}
+
+#login .btnLogin {
+  width: 356rem;
+  height: 40rem;
+  margin: 20rem 10rem 0 10rem;
+  border-radius: 20px;
+  border: 0;
+  font-size: 15rem;
+  font-weight: 500;
+  text-align: center;
+  background: #d8d8d8;
+  color: #666666;
+  opacity: 1;
+}
+#login .able {
+  background: #ffc200;
+}

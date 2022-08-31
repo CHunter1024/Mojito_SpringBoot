@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="../../plugins/element-ui/index.css"/>
+  <link rel="stylesheet" href="../../styles/common.css"/>
+  <link rel="stylesheet" href="../../styles/page.css"/>
+</head>
+<body>
+   <div class="dashboard-container" id="commodity-app">
+    <div class="container">
+      <div class="tableBar">
+        <el-input v-model.trim="input" placeholder="输入商品名称关键字搜索" style="width: 250px"
+                  clearable @keyup.enter.native="handleQuery">
+          <i slot="prefix" class="el-input__icon el-icon-search" style="cursor: pointer" @click="handleQuery"></i>
+        </el-input>
+        <div class="tableLab">
+          <span class="span-btn delBut non" @click="deleteHandle('batch', null)">批量删除</span>
+          <span class="span-btn blueBug non" @click="statusHandle('1')">批量启售</span>
+          <span class="span-btn delBut non" @click="statusHandle('0')" style="border: none">批量停售</span>
+          <el-button type="primary" @click="addCommodityHandle">+ 添加商品</el-button>
+        </div>
+      </div>
+      <el-table :data="tableData" class="tableBox" height="425"
+                @selection-change="handleSelectionChange"
+                @filter-change="filterHandler">
+        <el-table-column type="selection"></el-table-column>
+        <el-table-column prop="name" label="商品名称" align="center"></el-table-column>
+        <el-table-column label="图片" align="center">
+          <template slot-scope="scope">
+            <el-image style="width: auto; height: 40px"
+                      :src="getImage(scope.row.image)"
+                      :preview-src-list="[getImage(scope.row.image)]">
+              <div slot="error" class="image-slot">
+                <i class="el-icon-picture-outline" style="font-size: 30px; margin-top: 10px"></i>
+              </div>
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column prop="categoryName" label="商品类型" align="center"
+                         column-key="category" :filters="categoryList"></el-table-column>
+        <el-table-column label="售价" align="center" width="80px">
+          <template slot-scope="scope">
+            ￥ {{scope.row.price}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="sales" label="销量" align="center" width="80px"></el-table-column>
+        <el-table-column label="售卖状态" align="center">
+          <template slot-scope="scope">
+            {{scope.row.status === 0 ? '已停售' : '售卖中'}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="updateTime" label="操作时间" align="center" width="200px"></el-table-column>
+        <el-table-column label="操作" align="center" width="200px">
+          <template slot-scope="scope">
+            <el-button type="text" class="blueBug" @click="editCommodityHandle(scope.row.id)">修改</el-button>
+            <el-button type="text" class="blueBug" @click="statusHandle(scope.row)">
+              {{scope.row.status === 0 ? '启售' : '停售'}}
+            </el-button>
+            <el-button type="text" class="delBut non" @click="deleteHandle(null, scope.row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+        class="pageList"
+        :page-sizes="[10, 20, 30, 40]"
+        :page-size="pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="counts"
+        @size-change="handleSizeChange"
+        :current-page.sync="page"
+        @current-change="handleCurrentChange"
+      ></el-pagination>
+    </div>
+  </div>
+  <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+  <script src="../../plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../../plugins/element-ui/index.js"></script>
+  <!-- 引入axios -->
+  <script src="../../plugins/axios/axios.min.js"></script>
+  <script src="../../js/request.js"></script>
+  <script src="../../api/commodity.js"></script>
+  <script>
+    new Vue({
+      el: '#commodity-app',
+      data() {
+        return {
+          input: '',
+          page: 1,
+          pageSize: 10,
+          counts: 0,
+          categoryList: [],
+          tableData: [],
+          categoryIds: [],
+          checkList: []
+        }
+      },
+      created() {
+        let pageInfo = window.sessionStorage.getItem("pageInfo")
+        if (pageInfo) {
+          pageInfo = JSON.parse(pageInfo)
+          this.input = pageInfo.input
+          this.page = pageInfo.page
+          this.pageSize = pageInfo.pageSize
+        }
+        this.getCategories()
+        this.init()
+      },
+      methods: {
+        init() {
+          const params = {
+            page: this.page,
+            pageSize: this.pageSize,
+            name: this.input ? this.input : undefined,
+            categoryIds: this.categoryIds.length ? this.categoryIds : undefined,
+          }
+          getCommodityPage(params).then(res => {
+            if (res.code === 1) {
+              this.tableData = res.data.records
+              // 匹配商品分类名称
+              this.tableData.forEach(data => {
+                for (let category of this.categoryList) {
+                  if (data.categoryId === category.value) {
+                    data.categoryName = category.text
+                    break;
+                  }
+                }
+              })
+              this.counts = res.data.total
+            } else {
+              this.$message.error(res.msg)
+            }
+          })
+        },
+
+        // 获取商品分类信息
+        getCategories() {
+          getCategoryList({type: 0}).then(res => {
+            if (res.code === 1) {
+              this.categoryList = res.data.map(category => {
+                return {text: category.name, value: category.id}
+              })
+            } else {
+              this.$message.error(res.msg)
+            }
+          })
+        },
+        // 获取图片文件
+        getImage(image) {
+          return image ? `/common/download?file=${image}` : ''
+        },
+        // 批量选择处理
+        handleSelectionChange(values) {
+          let checkArr = []
+          values.forEach(value => {
+            checkArr.push(value.id)
+          })
+          this.checkList = checkArr
+        },
+        // 筛选处理
+        filterHandler(obj) {
+          this.categoryIds = obj.category
+          this.handleQuery()
+        },
+
+        // 添加
+        addCommodityHandle() {
+          window.parent.menuHandle({
+            id: '3',
+            url: '/backend/page/commodity/add.html',
+            name: '添加商品'
+          }, true)
+        },
+        // 修改
+        editCommodityHandle(id) {
+          window.parent.menuHandle({
+            id: '3',
+            url: `/backend/page/commodity/edit.html?id=${id}`,
+            name: '修改商品'
+          }, true)
+        },
+        // 删除
+        deleteHandle(type, id) {
+          if (type === 'batch' && id === null) {
+            if (this.checkList.length === 0) {
+              this.$message.error('请选择要删除的商品')
+              return
+            }
+          }
+          this.$confirm('确定删除指定商品', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            deleteCommodity(type === 'batch' ? this.checkList : [id]).then(res => {
+              if (res.code === 1) {
+                this.$message.success('删除成功！')
+                this.handleDeleteSuccess(type)
+              } else {
+                this.$message.error(`${res.msg}，删除失败`)
+              }
+            })
+          }).catch(() => {
+          })
+        },
+        //状态更改
+        statusHandle(row) {
+          let params = {}
+          if (typeof row === 'string') {
+            if (this.checkList.length === 0) {
+              this.$message.error('请选择要调整状态的商品')
+              return false
+            }
+            params.ids = this.checkList
+            params.status = row
+          } else {
+            params.ids = [row.id]
+            params.status = row.status === 0 ? '1' : '0'
+          }
+          this.$confirm('确定调整指定商品状态', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            updateCommodityStatus(params).then(res => {
+              if (res.code === 1) {
+                this.$message.success('商品状态更改成功！')
+                this.handleQuery()
+              } else {
+                this.$message.error(`${res.msg}，更改失败`)
+              }
+            })
+          }).catch(() => {
+          })
+        },
+
+        handleQuery() {
+          this.handleCurrentChange(1)
+        },
+        handleDeleteSuccess(type) {
+          if ((type === 'batch' && this.tableData.length === this.checkList.length) || (this.tableData.length === 1)) {
+            this.page--
+            this.savePageInfo()
+          }
+          this.init()
+        },
+        handleSizeChange (val) {
+          this.pageSize = val
+          this.init()
+          this.savePageInfo()
+        },
+        handleCurrentChange (val) {
+          this.page = val
+          this.init()
+          this.savePageInfo()
+        },
+        savePageInfo() {
+          sessionStorage.setItem("pageInfo", JSON.stringify({
+            input: this.input,
+            page: this.page,
+            pageSize: this.pageSize
+          }))
+        }
+      }
+    })
+  </script>
+</body>
+</html>

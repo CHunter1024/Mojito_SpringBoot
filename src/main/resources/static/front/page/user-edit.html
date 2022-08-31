@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=no,minimal-ui"/>
+  <title>Mojito</title>
+  <script src="../js/base.js"></script>
+  <link rel="stylesheet" href="../plugins/vant/vant.min.css">
+  <link rel="stylesheet" href="../styles/common.css"/>
+  <link rel="stylesheet" href="../styles/user-edit.css"/>
+</head>
+<body>
+  <div id="user_edit" class="app">
+    <div class="divHead">
+      <div class="divTitle">
+        <i @click="goBack"><van-icon name="arrow-left" /></i>个人资料
+      </div>
+    </div>
+    <div class="avatar">
+      <van-uploader accept="image/*" :before-read="beforeUpload" :after-read="UploadImage">
+        <van-image round :src="imageUrl">
+          <template v-slot:error></template>
+        </van-image>
+      </van-uploader>
+    </div>
+    <div class="divContainer">
+      <div class="email">
+        <van-field label="Email" :value="userInfo.email" readonly>
+          <template #extra>
+            <span class="operate" @click="dialogVisible=true">修改</span>
+          </template>
+        </van-field>
+      </div>
+      <div class="divSplit"></div>
+      <div class="name">
+        <van-field label="昵称" v-model="userInfo.name" placeholder="请输入昵称" maxlength="20"></van-field>
+      </div>
+      <div class="divSplit"></div>
+      <div class="sex">
+        <van-field label="性别">
+          <template #input>
+            <van-radio-group v-model="userInfo.sex" direction="horizontal">
+              <van-radio name="1">男</van-radio>
+              <van-radio name="0">女</van-radio>
+            </van-radio-group>
+          </template>
+        </van-field>
+      </div>
+    </div>
+    <van-button class="btnSave" @click="saveUserInfo">保存</van-button>
+    <van-dialog v-model="dialogVisible" :show-confirm-button="false" class="emailDialog">
+      <div class="head">
+        <div class="title">温馨提示</div>
+        <div class="tip">为了保障您的正常使用，请在绑定前确定新的QQ邮箱地址未被绑定</div>
+      </div>
+      <div class="container">
+        <div class="email">
+          <van-field v-model="qqNum" type="digit" placeholder="请输入QQ号码">
+            <template #extra>
+              <span>{{suffix}}</span>
+            </template>
+          </van-field>
+        </div>
+        <div class="split"></div>
+        <div class="code">
+          <van-field v-model="code" type="digit" placeholder="请输入验证码" maxlength="6">
+            <template #extra>
+              <van-button v-if="countdown==-1" size="small" :disabled="!qqNum" @click="getCode">获取验证码</van-button>
+              <span v-else style="color: #c0c4cc">{{countdown}}s后重新获取</span>
+            </template>
+          </van-field>
+        </div>
+        <div class="split"></div>
+      </div>
+      <van-button class="btnConfirm" @click="UpdateEmail">确认</van-button>
+      <div class="dialogClose" @click="dialogVisible=false">
+        <img src="../images/close.png"/>
+      </div>
+    </van-dialog>
+  </div>
+  <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+  <script src="../plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../plugins/vant/vant.min.js"></script>
+  <!-- 引入axios -->
+  <script src="../plugins/axios/axios.min.js"></script>
+  <script src="../js/request.js"></script>
+  <script src="../api/login.js"></script>
+  <script src="../api/user.js"></script>
+  <script>
+    new Vue({
+      el: "#user_edit",
+      data() {
+        return {
+          userInfo: {},
+          imageUrl: '',
+          qqNum: '',
+          code: '',
+          suffix: '@qq.com',
+          countdown: -1,
+          isGot: false,
+          dialogVisible: false
+        }
+      },
+      created() {
+        const userInfo = localStorage.getItem('frontUserInfo')
+        if (userInfo) {
+          this.userInfo = JSON.parse(userInfo)
+          this.userInfo.sex = this.userInfo.sex.toString()
+          this.imageUrl = this.getAvatar(this.userInfo.avatar)
+        }
+      },
+      methods: {
+        // 保存用户信息
+        saveUserInfo() {
+          if (this.userInfo.name) {
+            this.$toast.loading({
+              duration: 0,
+              forbidClick: true,
+              message: '更新中'
+            })
+            const params = {
+              avatar: this.userInfo.avatar,
+              name: this.userInfo.name,
+              sex: this.userInfo.sex
+            }
+            editUserInfo(params).then(res => {
+              if (res.code === 1) {
+                this.$toast('更新成功')
+                localStorage.setItem('frontUserInfo', JSON.stringify(this.userInfo))
+                this.goBack()
+              } else {
+                this.$toast(res.msg)
+              }
+            })
+          } else {
+            this.$toast('请输入昵称')
+          }
+        },
+
+        // 获取验证码
+        getCode() {
+          const qqNumReg = /[1-9][0-9]{4,}/
+          if (qqNumReg.test(this.qqNum)) {
+            getCodeApi(this.qqNum + '@qq.com').then(res => {
+              if (res.code === 1) {
+                this.isGot = true
+                // 进行倒计时
+                this.countdown = 60
+                let clock = window.setInterval(() => {
+                  this.countdown--
+                  if (this.countdown < 0) {
+                    window.clearInterval(clock)  // 停止计时
+                  }
+                }, 1000)
+              } else {
+                this.$toast(res.msg)
+              }
+            })
+          } else {
+            this.$toast('请输入正确的QQ号码')
+          }
+        },
+
+        // 更新邮箱地址
+        UpdateEmail() {
+          if (!this.qqNum) {
+            this.$toast('请输入QQ号码')
+            return
+          }
+          if (!this.isGot) {
+            this.$toast('请先获取验证码')
+            return
+          }
+          if (!this.code) {
+            this.$toast('请输入验证码')
+            return
+          }
+          if (this.code.length < 6) {
+            this.$toast('请输入正确的验证码')
+            return
+          }
+          this.$toast.loading({
+            duration: 0,
+            forbidClick: true,
+            message: '更新中'
+          })
+          const params = {
+            email: this.qqNum + '@qq.com',
+            code: this.code
+          }
+          UpdateUserEmail(params).then(res => {
+            if (res.code === 1) {
+              this.$toast('更新成功')
+              this.userInfo.email = res.data
+              this.dialogVisible = false
+              localStorage.setItem('frontUserInfo', JSON.stringify(this.userInfo))
+            } else {
+              this.$toast(res.msg)
+            }
+          })
+        },
+
+        // 文件上传前对格式和大小进行检查
+        beforeUpload(file) {
+          const isImage = file.type.startsWith("image/")
+          const isLt2M = file.size / 1024 / 1024 <= 2
+          if (!isImage) {
+            this.$toast('仅支持图片文件')
+          }
+          if (!isLt2M) {
+            this.$toast('图片大小不能超过2MB')
+          }
+          return isImage && isLt2M
+        },
+        // 上传图片文件
+        UploadImage(fileObj) {
+          upload(fileObj.file).then(res => {
+            if (res.code === 1) {
+              this.userInfo.avatar = res.data
+              this.imageUrl = URL.createObjectURL(fileObj.file)  // 图片回显
+            } else {
+              this.$toast(`${res.msg}，图片上传失败`)
+            }
+          })
+        },
+        // 获取头像图片文件的URL
+        getAvatar(avatar) {
+          return avatar ? `/common/download?file=avatar${encodeURIComponent('\\')}${avatar}` : '../images/avatar.png'
+        },
+
+        // 返回上一个页面
+        goBack() {
+          window.requestAnimationFrame(() => {
+            history.back()
+          })
+        }
+      }
+  })
+  </script>
+</body>
+</html>

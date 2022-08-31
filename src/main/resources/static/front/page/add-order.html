@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=no,minimal-ui"/>
+  <title>Mojito</title>
+  <script src="../js/base.js"></script>
+  <link rel="stylesheet" href="../plugins/vant/vant.min.css">
+  <link rel="stylesheet" href="../styles/common.css"/>
+  <link rel="stylesheet" href="../styles/add-order.css"/>
+</head>
+<body>
+  <div id="add_order" class="app">
+    <div class="divHead">
+      <div class="divTitle">
+        <i @click="goBack"><van-icon name="arrow-left" /></i>提交订单
+      </div>
+    </div>
+    <div class="divContent">
+      <div class="divAddress">
+        <div v-if="address" class="haveAddress" @click="toAddressPage">
+          <div class="address">{{address.detail}}</div>
+          <div class="info">
+            <span>{{address.consignee}} {{address.sex === 0 ? '女士' : '先生'}}</span>
+            <span>{{address.phone}}</span>
+          </div>
+          <i><van-icon name="arrow" /></i>
+        </div>
+        <div v-else class="noAddress" @click="toAddressPage">
+          <img src="../images/add-white.png"/>
+          <span>选择收货地址</span>
+          <i><van-icon name="arrow" /></i>
+        </div>
+        <div class="divSplit"></div>
+        <div class="divDeliveryTime">
+          <span>立即送出</span>
+          <span>大约{{deliveryTime}}送达</span>
+        </div>
+      </div>
+      <div class="order">
+        <div class="title">订单明细</div>
+        <div class="divSplit"></div>
+        <div class="itemList">
+          <div class="item" v-for="(item,index) in cartData" :key="index">
+            <van-image :src="getImage(item.image)">
+              <template v-slot:error></template>
+            </van-image>
+            <div class="desc">
+              <div class="name">{{item.name}}</div>
+              <div class="config">{{item.config}}</div>
+              <div class="number">x{{item.number}}</div>
+            </div>
+            <div class="price">
+              <span class="spanMoney">￥</span>{{item.amount}}
+            </div>
+          </div>
+          <div class="deliveryPrice">
+            <div>配送费</div>
+            <div class="price">
+              <span class="spanMoney">￥</span>3
+            </div>
+          </div>
+        </div>
+        <div class="divSplit"></div>
+        <div class="subTotal">
+          小计 ￥<span class="amount">{{amount}}</span>
+        </div>
+      </div>
+      <div class="remark">
+        <div class="title">备注</div>
+        <div class="divSplit"></div>
+        <van-field v-model.trim="remark" type="textarea" maxlength="50" show-word-limit placeholder="请输入您需要备注的信息"/>
+      </div>
+    </div>
+    <div class="divBottom">
+      <div class="divAmount">
+        <span class="spanMoney">￥</span>{{amount}}
+      </div>
+      <div class="btnPay" @click="toPay">去支付</div>
+    </div>
+  </div>
+  <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+  <script src="../plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../plugins/vant/vant.min.js"></script>
+  <!-- 引入axios -->
+  <script src="../plugins/axios/axios.min.js"></script>
+  <script src="../js/request.js"></script>
+  <script src="../api/index.js"></script>
+  <script src="../api/address.js"></script>
+  <script src="../api/order.js"></script>
+  <script>
+    new Vue({
+      el: "#add_order",
+      data() {
+        return {
+          address: null,
+          deliveryTime: '',
+          cartData: [],
+          remark: '',
+        }
+      },
+      computed: {
+        amount() {
+          let amount = 0
+          this.cartData.forEach(item => {
+            amount += item.amount
+          })
+          return amount + 3
+        }
+      },
+      created() {
+        this.getCartData()
+        this.getOrderAddress()
+        this.getDeliveryTime()
+      },
+      methods: {
+        // 获取购物车数据
+        getCartData() {
+          getCartApi().then(res => {
+            if (res.code === 1) {
+              this.cartData = res.data
+            } else {
+              this.$notify({type: 'danger', message: res.msg})
+            }
+          })
+        },
+        // 获取下单地址
+        getOrderAddress() {
+          const orderAddress = localStorage.getItem('orderAddress')
+          if (orderAddress) {
+            this.address = JSON.parse(orderAddress)
+          } else {
+            getOrderAddressApi().then(res => {
+              if (res.code === 1) {
+                this.address = res.data
+              }
+            })
+          }
+        },
+        // 获取预计送达时间（目前时间 + 30分钟）
+        getDeliveryTime() {
+          let now = new Date()
+          let hour = now.getHours()
+          let minute = now.getMinutes() + 30
+          if (minute >= 60) {
+            hour = hour + 1
+            minute = minute - 60
+          }
+          if (hour < 10) {
+            hour = '0' + hour
+          }
+          if (minute < 10) {
+            minute = '0' + minute
+          }
+          this.deliveryTime = hour + ':' + minute
+        },
+        
+        // 支付订单
+        toPay() {
+          if (!this.address) {
+            this.$toast('收货地址未填写')
+            return
+          }
+          this.$toast.loading({
+            duration: 0,
+            forbidClick: true,
+            message: '加载中'
+          })
+          const params = {
+            remark: this.remark,
+            payMethod: 1,  // 1:微信支付,2:支付宝支付
+            addressBookId: this.address.id
+          }
+          addOrderApi(params).then(res => {
+            if (res.code === 1) {
+              this.toPaySuccessPage(res.data)
+            } else {
+              this.$toast.fail({forbidClick: true, message: res.msg})
+            }
+          })
+        },
+
+        // 获取图片文件的URL
+        getImage(image) {
+          return image ? `/common/download?file=${image}` : ''
+        },
+
+        toAddressPage() {
+          window.requestAnimationFrame(() => {
+            window.location.href = '/front/page/address.html'
+          })
+        },
+        toPaySuccessPage(id) {
+          window.requestAnimationFrame(() => {
+            window.location.replace(`/front/page/pay-success.html?id=${id}`)
+          })
+        },
+        goBack() {
+          window.requestAnimationFrame(() => {
+            history.back()
+          })
+        },
+      }
+    })
+  </script>
+</body>
+</html>

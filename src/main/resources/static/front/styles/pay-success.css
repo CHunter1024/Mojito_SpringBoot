@@ -1,0 +1,65 @@
+/* 导航栏样式 */
+#pay_success .divHead {
+  width: 100%;
+  height: 46rem;
+  line-height: 46rem;
+  background: #ffffff;
+  position: relative;
+}
+#pay_success .divHead i {
+  position: absolute;
+  font-size: 20rem;
+  right: 10rem;
+  top: 40%;
+}
+
+/* 主体样式 */
+#pay_success .divContent {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+}
+#pay_success .divContent img {
+  margin: 150rem 0 20rem 10rem;
+  width: 90rem;
+  height: 85rem;
+}
+#pay_success .divContent .divTitle {
+  height: 30rem;
+  line-height: 30rem;
+  opacity: 1;
+  font-size: 24rem;
+  font-weight: 500;
+  text-align: center;
+  color: #333333;
+  margin-bottom: 10rem;
+}
+#pay_success .divContent .divTime, .divText {
+  height: 22rem;
+  line-height: 22rem;
+  opacity: 1;
+  font-size: 16rem;
+  font-weight: 400;
+  text-align: center;
+  color: #666666;
+}
+#pay_success .divContent .divText {
+  margin-top: 5rem;
+  margin-bottom: 25rem;
+}
+#pay_success .divContent .btnView {
+  width: 125rem;
+  height: 35rem;
+  line-height: 35rem;
+  background: #ffc200;
+  border-radius: 25px;
+  font-size: 15rem;
+  font-weight: 500;
+  text-align: center;
+  color: #333333;
+  letter-spacing: 0;
+}

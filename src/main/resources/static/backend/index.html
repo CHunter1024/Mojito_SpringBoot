@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mojito管理端</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="plugins/element-ui/index.css"/>
+  <link rel="stylesheet" href="styles/common.css"/>
+  <link rel="stylesheet" href="styles/index.css"/>
+  <link rel="stylesheet" href="styles/icon/iconfont.css"/>
+  <style>
+    /* 以动画的方式解决vue语法出现在页面上的问题 */
+    @keyframes opacity {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    body {
+      opacity: 0;
+      animation: opacity 0ms ease-out 500ms forwards;
+      min-width: 1366px;
+    }
+    .app-main {
+      height: calc(100% - 64px);
+    }
+    .app-main .divTmp {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="app-wrapper openSidebar clearfix">
+      <!-- sidebar -->
+      <div class="sidebar-container">
+        <div class="logo">
+          <img src="images/logo/index-logo.png" alt="" style="width: 135px; height: 45px" />
+        </div>
+        <el-scrollbar wrap-class="scrollbar-wrapper">
+          <el-menu
+            :default-active="menuInfo.defAct"
+            :unique-opened="false"
+            :collapse-transition="false"
+            background-color="#343744"
+            text-color="#bfcbd9"
+            active-text-color="#f4f4f5"
+          >
+            <div v-for="item in menuList" v-if="item.id!=1 || userInfo.role==1" :key="item.id">
+              <el-menu-item :index="item.id" @click="menuHandle(item,false)">
+                <i class="iconfont" :class="item.icon"></i>
+                <span slot="title">{{item.name}}</span>
+              </el-menu-item>
+            </div>
+          </el-menu>
+        </el-scrollbar>
+      </div>
+      <div class="main-container">
+        <!-- <navbar /> -->
+        <div class="navbar">
+          <div class="head-label">
+            <span v-if="menuInfo.goBackFlag" class="goBack" @click="goBack">
+              <img src="images/icons/btn_back@2x.png" alt="" /> 返回
+            </span>
+            <span>{{menuInfo.headTitle}}</span>
+          </div>
+          <div class="right-menu">
+            <el-dropdown trigger="click" placement="bottom" size="small" style="height: 65%" @command="handleCommand">
+              <i class="el-icon-edit"></i>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="个人信息">个人信息</el-dropdown-item>
+                <el-dropdown-item command="修改密码" divided>修改密码</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <div class="avatar-wrapper">{{userInfo.username}}{{userInfo.role ? '（管理员）' : ''}}</div>
+            <el-tooltip class="item" effect="dark" content="退出" placement="bottom">
+              <img src="images/icons/btn_close@2x.png" class="outLogin" alt="退出" @click="logout" />
+            </el-tooltip>
+          </div>
+        </div>
+        <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="30%" center
+                   :close-on-click-modal="false" @closed="resetForm">
+          <el-form
+            v-if="dialogTitle=='个人信息'"
+            ref="empForm"
+            :model="empForm"
+            :rules="empRules"
+            :key="'empRules'"
+            label-width="100px"
+          >
+            <el-form-item label="手机号码" prop="phoneNumber">
+              <el-input v-model.trim="empForm.phoneNumber" placeholder="请输入手机号码" maxlength="11"/>
+            </el-form-item>
+            <el-form-item label="员工姓名" prop="username">
+              <el-input v-model.trim="empForm.username" placeholder="请输入员工姓名" maxlength="12"/>
+            </el-form-item>
+            <el-form-item label="性别" prop="sex">
+              <el-radio-group v-model="empForm.sex">
+                <el-radio label="男"></el-radio>
+                <el-radio label="女"></el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+          <el-form
+            v-if="dialogTitle=='修改密码'"
+            ref="pwForm"
+            :model="pwForm"
+            :rules="pwRules"
+            :key="'pwRules'"
+            label-width="100px"
+            hide-required-asterisk
+          >
+            <el-form-item label="原密码" prop="oldPassword">
+              <el-input v-model.trim="pwForm.oldPassword" type="password" show-password placeholder="请输入原密码" maxlength="18"/>
+            </el-form-item>
+            <el-form-item label="新密码" prop="newPassword">
+              <el-input v-model.trim="pwForm.newPassword" type="password" show-password placeholder="请输入新密码" maxlength="18"/>
+            </el-form-item>
+            <el-form-item label="确认密码" prop="confirmPassword">
+              <el-input v-model.trim="pwForm.confirmPassword" type="password" show-password placeholder="再次输入确认" maxlength="18"/>
+            </el-form-item>
+          </el-form>
+          <span slot="footer" class="dialog-footer">
+            <el-button size="medium" @click="dialogVisible=false">取消</el-button>
+            <el-button type="primary" size="medium" @click="submitForm">保存</el-button>
+          </span>
+        </el-dialog>
+        <div class="app-main" v-loading="loading">
+          <div class="divTmp" v-show="loading"></div>
+          <iframe
+            id="cIframe"
+            class="c_iframe"
+            name="cIframe"
+            :src="menuInfo.iframeUrl"
+            width="100%"
+            height="auto"
+            frameborder="0"
+            v-show="!loading"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+  <script src="plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="plugins/element-ui/index.js"></script>
+  <!-- 引入axios -->
+  <script src="plugins/axios/axios.min.js"></script>
+  <script src="js/request.js"></script>
+  <script src="js/validate.js"></script>
+  <script src="api/user.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          userInfo: {},
+          empForm: {
+            phoneNumber: '',
+            username: '',
+            sex: '男'
+          },
+          pwForm: {
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          },
+          menuInfo: {
+            defAct: '2',
+            menuActive: '2',
+            iframeUrl: 'page/category/list.html',
+            headTitle: '分类管理',
+            goBackFlag: false
+          },
+          menuList: [
+            {
+              id: '1',
+              name: '员工管理',
+              url: 'page/member/list.html',
+              icon: 'icon-member'
+            },
+            {
+              id: '2',
+              name: '分类管理',
+              url: 'page/category/list.html',
+              icon: 'icon-category'
+            },
+            {
+              id: '3',
+              name: '商品管理',
+              url: 'page/commodity/list.html',
+              icon: 'icon-commodity'
+            },
+            {
+              id: '4',
+              name: '套餐管理',
+              url: 'page/combo/list.html',
+              icon: 'icon-combo'
+            },
+            {
+              id: '5',
+              name: '订单明细',
+              url: 'page/order/list.html',
+              icon: 'icon-order'
+            }
+          ],
+          dialogTitle: '',
+          dialogVisible: false,
+          loading: true,
+          timer: null
+        }
+      },
+      computed: {
+        empRules() {
+          const editCheckPhoneNumber = (rule, value, callback) => {
+            if (value.length < 1) {
+              callback(new Error('请输入手机号码'))
+            } else if (!isPhoneNumber(value)) {
+              callback(new Error('请输入正确的手机号码'))
+            } else if (this.srcPhoneNumber !== value) {
+              exist('phone_number', value).then(res => {
+                if (res.code === 1) {
+                  if (res.data) {
+                    callback(new Error('该手机号码已被注册'))
+                  } else {
+                    callback()
+                  }
+                }
+              })
+            } else {
+              callback()
+            }
+          }
+          return {
+            phoneNumber: [{validator: editCheckPhoneNumber, trigger: 'blur'}],
+            username: [{validator: checkUsername, trigger: 'blur'}]
+          }
+        },
+        pwRules() {
+          const checkConfirmPassword = (rule, value, callback) => {
+            if (value.length < 1) {
+              callback(new Error('请输入确认密码'))
+            } else if (value !== this.pwForm.newPassword) {
+              callback(new Error('密码不一致'))
+            } else {
+              callback()
+            }
+          }
+          return {
+            oldPassword: [{required: true, message: '请输入原密码', trigger: 'blur'}],
+            newPassword: [{validator: checkPassword, trigger: 'blur'}],
+            confirmPassword: [{validator: checkConfirmPassword, trigger: 'blur'}]
+          }
+        }
+      },
+      created() {
+        const userInfo = window.localStorage.getItem('backendUserInfo')
+        if (userInfo) {
+          this.userInfo = JSON.parse(userInfo)
+        }
+        const menuInfo = window.sessionStorage.getItem('menuInfo')
+        if (menuInfo) {
+          this.menuInfo = JSON.parse(menuInfo)
+        } else if (this.userInfo.role === 1) {
+          this.menuInfo.defAct = '1'
+          this.menuInfo.menuActive = '1'
+          this.menuInfo.iframeUrl = 'page/member/list.html'
+          this.menuInfo.headTitle = '员工管理'
+        }
+        this.closeLoading()
+      },
+      mounted() {
+        // 让以下方法可以对内调用，window.parent.xxx
+        window.menuHandle = this.menuHandle
+        window.$message = this.$message
+        window.$notify = this.$notify
+      },
+      beforeDestroy() {
+        this.timer = null
+        clearTimeout(this.timer)
+      },
+      methods: {
+        logout() {
+          logoutApi().then((res) => {
+            if (res.code === 1) {
+              localStorage.removeItem('backendUserInfo')
+              sessionStorage.clear()
+              window.location.href = '/backend/page/login/login.html'
+            } else {
+              this.$message.error(res.msg)
+            }
+          })
+        },
+        goBack() {
+          const menu = this.menuList.find(item=>item.id===this.menuInfo.menuActive)  // 查找当前激活的窗口
+          this.menuHandle(menu,false)
+        },
+        menuHandle(item, goBackFlag) {
+          sessionStorage.clear()  // 切换菜单选项时清除页面的配置缓存
+          this.loading = true
+          this.menuInfo.menuActive = item.id
+          this.menuInfo.iframeUrl = item.url
+          this.menuInfo.headTitle = item.name
+          this.menuInfo.goBackFlag = goBackFlag
+          this.closeLoading()
+          // 储存到浏览器本地，仅对当前窗口有效
+          sessionStorage.setItem('menuInfo',JSON.stringify({
+            ...this.menuInfo,
+            defAct: this.menuInfo.menuActive
+          }))
+        },
+        closeLoading() {
+          this.timer = null
+          this.timer = setTimeout(() => {
+            this.loading = false
+          }, 1000)
+        },
+
+        handleCommand(command) {
+          this.dialogTitle = command
+          if (command === '个人信息') {
+            this.empForm = {...this.userInfo}
+            this.empForm.sex = this.empForm.sex === 0 ? '女' : '男'
+            this.srcPhoneNumber = this.userInfo.phoneNumber
+          }
+          this.dialogVisible = true
+        },
+        resetForm() {
+          if (this.dialogTitle === '个人信息') {
+            this.$refs.empForm.resetFields()
+          } else {
+            this.$refs.pwForm.resetFields()
+          }
+        },
+        submitForm() {
+          let formName = this.dialogTitle === '个人信息' ? 'empForm' : 'pwForm'
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              const params = this.dialogTitle === '个人信息' ?
+                      {...this.empForm, sex: this.empForm.sex === '女' ? 0 : 1} :
+                      {oldPassword: this.pwForm.oldPassword, password: this.pwForm.newPassword}
+              editUser(params).then(res => {
+                if (res.code === 1) {
+                  this.$message.success('修改成功')
+                  this.dialogVisible = false
+                  if (this.dialogTitle === '个人信息') {
+                    this.userInfo = params
+                    localStorage.setItem('backendUserInfo', JSON.stringify(this.userInfo))  // 更新放在浏览器中的用户信息
+                  }
+                } else {
+                  this.$message.error(res.msg)
+                }
+              })
+            } else {
+              return false
+            }
+          })
+        }
+      }
+    })
+  </script>
+</body>
+</html>

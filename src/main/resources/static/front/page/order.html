@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
+<head>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,user-scalable=no,minimal-ui"/>
+  <title>Mojito</title>
+  <script src="../js/base.js"></script>
+  <link rel="stylesheet" href="../plugins/vant/vant.min.css">
+  <link rel="stylesheet" href="../styles/common.css"/>
+  <link rel="stylesheet" href="../styles/order.css"/>
+</head>
+<body>
+  <div id="order" class="app">
+    <div class="divHead">
+      <div class="divTitle">
+        <i @click="goBack"><van-icon name="arrow-left" /></i>我的订单
+      </div>
+    </div>
+    <div class="divContent" v-if="orderList && orderList.length>0">
+      <van-list v-model="loading" :finished="finished" finished-text="没有更多订单了" @load="getOrders">
+        <div v-for="(order,index) in orderList" :key="index" class="divItem" @click="toOrderDetailPage(order)"
+             @touchstart="touchstart(order,index)" @touchmove="touchmove">
+          <div class="head">
+            <span class="time">{{order.orderTime}}</span>
+            <span class="status">{{getStatus(order.status)}}</span>
+          </div>
+          <div class="details">
+            <div class="goods">
+              <div v-for="(item,index) in order.details" :key="index" class="item">
+                <van-image :src="getImage(item.image)">
+                  <template v-slot:error></template>
+                </van-image>
+                <div class="name">{{item.name}}</div>
+              </div>
+            </div>
+            <div class="result">
+              <div>
+                <div class="amount">￥{{order.amount}}</div>
+                <div class="goodsNum">共{{order.goodsNum}}件</div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom">
+            <div class="btnAgain" @click.stop.prevent="addOrderAgain(order)">再来一单</div>
+          </div>
+        </div>
+      </van-list>
+    </div>
+    <div class="divNoOrder" v-if="orderList && orderList.length<1">
+      <div class="divContainer">
+        <img src="../images/no_order.png"/>
+        <div>暂无订单</div>
+      </div>
+    </div>
+  </div>
+  <!-- 开发环境版本,包含了有帮助的命令行警告 -->
+  <script src="../plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../plugins/vant/vant.min.js"></script>
+  <!-- 引入axios -->
+  <script src="../plugins/axios/axios.min.js"></script>
+  <script src="../js/request.js"></script>
+  <script src="../api/order.js"></script>
+  <script>
+    new Vue({
+      el: "#order",
+      data() {
+        return {
+          orderList: null,
+          loading: false,
+          finished: false,
+          isDeleting: false,
+          page: 0,
+          pageSize: 5
+        }
+      },
+      created() {
+        this.getOrders()
+      },
+      methods: {
+        // 获取订单
+        getOrders() {
+          const params = this.isDeleting ? {page: 1, pageSize: this.page * this.pageSize} :
+                                           {page: ++this.page, pageSize: this.pageSize}
+          getOrderPage(params).then(res => {
+            if (res.code === 1) {
+              const records = res.data.records
+              // 数据处理
+              records.forEach(order => {
+                // 统计订单商品数量
+                let goodsNum = 0
+                order.details.forEach(detail => goodsNum += detail.number)
+                order.goodsNum = goodsNum
+                // 根据商品Id去重
+                // 先判断Set中有没有该商品Id，如果没有，过滤条件通过，且商品Id存到Set中，作为下次判断的依据
+                const set = new Set()
+                order.details = order.details.filter(detail => !set.has(detail.goodsId) && set.add(detail.goodsId))
+              })
+
+              // 将数据添加到订单列表中
+              if (!this.orderList || this.isDeleting) {
+                this.orderList = []
+                this.isDeleting = false
+              }
+              this.orderList.push(...records)
+
+              this.loading = false  // 下一页数据加载完毕
+              if (this.page >= res.data.pages) {
+                this.finished = true  // 全部数据加载完毕
+              }
+            } else {
+              this.$notify({type: 'danger', message: res.msg})
+            }
+          })
+        },
+        // 获取订单状态
+        getStatus(status) {
+          let str
+          switch (status) {
+            case 1:
+              str = '待付款'
+              break
+            case 2:
+              str = '已支付'
+              break
+            case 3:
+              str = '已接单'
+              break
+            case 4:
+              str = '派送中'
+              break
+            case 5:
+              str = '已完成'
+              break
+            case 6:
+              str = '已取消'
+              break
+          }
+          return str
+        },
+
+        // 再来一单
+        addOrderAgain(order) {
+          addOrderAgainApi({id: order.id}).then(res => {
+            if (res.code === 1) {
+              window.requestAnimationFrame(() => {
+                window.location.href = '/front/index.html'
+              })
+            } else {
+              this.$toast(res.msg)
+            }
+          })
+        },
+
+        // 设置长按事件
+        touchstart(order, index) {
+          this.timeOutEvent = setTimeout(() => {
+            this.deleteOrder(order, index)
+          }, 500)  // 这里设置定时器，定义长按500ms触发长按事件
+          return false
+        },
+        // 如果手指有移动，则取消所有事件，此时说明用户只是要移动而不是长按
+        touchmove() {
+          clearTimeout(this.timeOutEvent)  // 清除定时器
+          this.timeOutEvent = 0
+        },
+        // 删除订单（已完成或已取消才可删除）
+        deleteOrder(order, index) {
+          this.timeOutEvent = 0
+          if (order.status === 5 || order.status === 6) {
+            this.$dialog.confirm({
+              title: '提示',
+              message: '是否删除订单？',
+              confirmButtonText: '删除'
+            }).then(() => {
+              deleteOrderApi(order.id).then(res => {
+                if (res.code === 1) {
+                  if (this.finished) {
+                    this.orderList.splice(index, 1)
+                  } else {
+                    this.isDeleting = true
+                    this.getOrders()
+                  }
+                } else {
+                  this.$toast(res.msg)
+                }
+              })
+            }).catch(() => {
+            })
+          }
+        },
+
+        // 获取图片文件的URL
+        getImage(image) {
+          return image ? `/common/download?file=${image}` : ''
+        },
+
+        toOrderDetailPage(order) {
+          window.requestAnimationFrame(() => {
+            window.location.href = `/front/page/order-detail.html?id=${order.id}`
+          })
+        },
+        goBack() {
+          window.requestAnimationFrame(() => {
+            history.back()
+          })
+        }
+      }
+    })
+  </script>
+</body>
+</html>

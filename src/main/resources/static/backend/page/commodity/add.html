@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document</title>
+  <!-- 引入样式 -->
+  <link rel="stylesheet" href="../../plugins/element-ui/index.css"/>
+  <link rel="stylesheet" href="../../styles/common.css"/>
+  <link rel="stylesheet" href="../../styles/page.css"/>
+</head>
+<body>
+  <div class="addBrand-container" id="commodity-add-app">
+    <div class="container">
+      <el-form
+        ref="ruleForm"
+        :model="ruleForm"
+        :rules="rules"
+        :inline="true"
+        label-width="180px"
+        class="demo-ruleForm"
+      >
+        <div>
+          <el-form-item label="商品名称" prop="name">
+            <el-input v-model.trim="ruleForm.name" placeholder="请填写商品名称" maxlength="60" />
+          </el-form-item>
+          <el-form-item label="商品分类" prop="categoryId">
+            <el-select v-model="ruleForm.categoryId" placeholder="请选择商品分类">
+              <el-option v-for="(item,index) in categoryList" :key="index" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="商品价格" prop="price">
+            <el-input v-model.trim="ruleForm.price" placeholder="请设置商品价格" />
+          </el-form-item>
+        </div>
+        <el-form-item label="商品配置" prop="configs">
+          <el-form-item>
+            <div class="configBox">
+              <el-button v-if="commodityConfigs.length==0" type="primary" @click="addConfigs">+ 添加配置</el-button>
+              <div v-if="commodityConfigs.length!=0" class="config">
+                <div class="tip">
+                  <span>提示：输入标签回车添加</span>
+                </div>
+                <div class="configMain">
+                  <div v-for="(item,index) in commodityConfigs" :key="index" class="items">
+                    <div class="name">
+                      <div class="selectInput">
+                        <div>
+                          <el-input v-model.trim="item.name" style="width: 100%" placeholder="配置名称" maxlength="15"
+                                    @focus="item.showOption=true" @blur="item.showOption=false" />
+                        </div>
+                        <div v-show="item.showOption" class="configSelect">
+                          <span v-for="(dataItem,dataIndex) in commodityConfigsData" :key="dataIndex" class="items"
+                                @mousedown="selectOption(dataItem,index)">{{dataItem.name}}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="label">
+                      <el-tag v-for="(labItem,labIndex) in item.value" :key="labIndex" class="tag"
+                              closable @close="delConfigLabel(labIndex, index)">{{labItem}}</el-tag>
+                      <div class="inputBox" :style="{flex: 1}" contenteditable="true"
+                           @keydown.enter="(val)=>keyDownHandle(val,index)"></div>
+                    </div>
+                    <span class="delConfig delBut" @click="delConfig(index)">删除</span>
+                  </div>
+                </div>
+                <el-button type="primary" @click="addConfigs">添加配置</el-button>
+              </div>
+            </div>
+          </el-form-item>
+        </el-form-item>
+        <div>
+          <el-form-item label="商品图片" prop="image">
+            <el-upload
+              class="avatar-uploader"
+              action="/backend/common/upload"
+              accept="image/*"
+              :show-file-list="false"
+              :before-upload="beforeUpload"
+              :on-success="successUpload"
+            >
+              <img v-if="imageUrl" :src="imageUrl" class="avatar"/>
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+          </el-form-item>
+        </div>
+        <div class="address">
+          <el-form-item label="商品描述" prop="description">
+            <el-input v-model="ruleForm.description" type="textarea" :rows="3"
+              placeholder="商品描述，最长300字" maxlength="300" />
+          </el-form-item>
+        </div>
+        <div class="subBox address">
+          <el-form-item>
+            <el-button @click="goBack">取消</el-button>
+            <el-button type="primary" @click="submitForm('ruleForm',false)">保存</el-button>
+            <el-button type="primary" class="continue" @click="submitForm('ruleForm',true)">保存并继续添加</el-button>
+          </el-form-item>
+        </div>
+      </el-form>
+    </div>
+  </div>
+  <!-- 开发环境版本，包含了有帮助的命令行警告 -->
+  <script src="../../plugins/vue/vue.js"></script>
+  <!-- 引入组件库 -->
+  <script src="../../plugins/element-ui/index.js"></script>
+  <!-- 引入axios -->
+  <script src="../../plugins/axios/axios.min.js"></script>
+  <script src="../../js/request.js"></script>
+  <script src="../../js/common.js"></script>
+  <script src="../../api/commodity.js"></script>
+  <script>
+    new Vue({
+      el: '#commodity-add-app',
+      data() {
+        return {
+          imageUrl: '',
+          categoryList: [],
+          commodityConfigsData: [],
+          commodityConfigs: [],
+          ruleForm: {
+            name: '',
+            categoryId: '',
+            price: '',
+            image: '',
+            description: '',
+            configs: []
+          },
+        }
+      },
+      computed: {
+        rules() {
+          const checkPrice = (rule, value, callback) => {
+            let reg = /^\d+(\.\d{0,2})?$/
+            if (value.length < 1) {
+              callback(new Error('请设置商品价格'))
+            } else if (!reg.test(value)) {
+              callback(new Error('价格只能为数字,且最多保留两位小数'))
+            } else if (value > 99999999.99) {
+              callback(new Error('价格过大'))
+            } else {
+              callback()
+            }
+          }
+          return {
+            name: [{required: true, message: '请填写商品名称', trigger: 'blur'}],
+            categoryId: [{required: true, message: '请选择商品分类', trigger: 'change'}],
+            price: [{required: true, validator: checkPrice, trigger: 'blur'}]
+          }
+        }
+      },
+      created() {
+        this.getCategories()
+        this.commodityConfigsData = getConfigListHand()
+      },
+      methods: {
+        // 获取商品分类
+        getCategories() {
+          getCategoryList({type: 0}).then(res => {
+            if (res.code === 1) {
+              this.categoryList = res.data
+            } else {
+              this.$message.error(res.msg)
+            }
+          })
+        },
+
+        // 按钮 - 添加配置项
+        addConfigs() {
+          this.commodityConfigs.push({name: '', value: [], showOption: false})
+        },
+        // 按钮 - 删除配置项
+        delConfig(index) {
+          this.commodityConfigs.splice(index, 1)
+        },
+        // 选中 - 配置选项
+        selectOption(dataItem, index) {
+          this.commodityConfigs[index].name = dataItem.name
+          this.commodityConfigs[index].value = JSON.parse(JSON.stringify(dataItem.value))
+        },
+        // 按钮 - 删除配置标签
+        delConfigLabel(labIndex, index) {
+          this.commodityConfigs[index].value.splice(labIndex, 1)
+        },
+        // 按下回车 - 添加配置标签
+        keyDownHandle(val, index) {
+          if (event) {
+            event.cancelBubble = true
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          if (val.target.innerText.trim() !== '') {
+            this.commodityConfigs[index].value.push(val.target.innerText)
+            val.target.innerText = ''
+          }
+        },
+
+        // 提交表单
+        submitForm(formName, st) {
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              const params = {...this.ruleForm}
+              params.configs = JSON.parse(JSON.stringify(this.commodityConfigs))
+              params.configs.forEach(config => {
+                config.value = `[${config.value.toString()}]`  // 把配置标签数组转换为字符串形式
+                delete config.showOption  // 删除无关属性
+              })
+              addCommodity(params).then(res => {
+                if (res.code === 1) {
+                  window.parent.$message.success('添加成功')
+                  if (!st) {
+                    this.goBack()
+                  } else {
+                    let currCategoryId = this.ruleForm.categoryId
+                    this.imageUrl = ''
+                    this.commodityConfigs = []
+                    this.$refs[formName].resetFields()
+                    this.ruleForm.categoryId = currCategoryId
+                  }
+                } else {
+                  this.$message.error(`${res.msg}，添加失败`)
+                }
+              })
+            } else {
+              return false
+            }
+          })
+        },
+
+        // 文件上传前对格式和大小进行检查
+        beforeUpload(file) {
+          const isImage = file.type.startsWith("image/")
+          const isLt2M = file.size / 1024 / 1024 <= 2
+          if (!isImage) {
+            this.$message.error('仅支持图片文件')
+          }
+          if (!isLt2M) {
+            this.$message.error('图片大小不能超过2MB')
+          }
+          return isImage && isLt2M
+        },
+        // 文件上传成功
+        successUpload(res, file) {
+          if (res.code === 1) {
+            this.imageUrl = URL.createObjectURL(file.raw)  // 赋值图片的url，用于图片回显功能
+            this.ruleForm.image = res.data
+          } else {
+            this.$message.error(`${res.msg}，图片上传失败`)
+          }
+        },
+
+        goBack() {
+          window.parent.menuHandle({
+            id: '3',
+            url: '/backend/page/commodity/list.html',
+            name: '商品管理'
+          }, false)
+        }
+      }
+    })
+  </script>
+</body>
+</html>

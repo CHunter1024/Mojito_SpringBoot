@@ -1,0 +1,81 @@
+server:
+  # 配置端口号
+  port: 8080
+
+spring:
+  # 配置SQL数据源信息
+  datasource:
+    # JDBC配置
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: ZpXXRCAMn6WEOS3FpXZNbsxLSOCq8eCnh8WqYK4g9w+xH+ApVole1DOtomXVt9yO6djE5rufMZf2aZ2jt3k17g==
+
+    druid:
+      # 连接池配置
+      filters: config
+      connection-properties: config.decrypt=true  # 解密
+
+  servlet:
+    multipart:
+      max-file-size: 10MB     #  最大支持上传文件大小(默认1MB)
+      max-request-size: 10MB  #  最大支持请求文件大小(默认10MB)
+
+  # 配置QQEmail
+  mail:
+    host: smtp.qq.com                # SMTP服务器地址
+    port: 587                        # 端口号(465/587)
+    username: 1393429776@qq.com      # qq邮箱地址
+    password: bvztyhcarvwkhgbc       # 授权码
+    protocol: smtp                   # 类型，默认就smtp
+    default-encoding: UTF-8          # 字符集，默认UTF-8
+
+# 配置MybatisPlus
+mybatis-plus:
+  configuration:
+    # 配置MybatisPlus日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+  # 全局配置
+  global-config:
+    db-config:
+      # 配置MyBatis-Plus的主键策略
+      id-type: assign_id
+  type-aliases-package: com.freedom.mojito.pojo   # 以包为单位，设置该包下所有的类型都拥有默认的别名，即类名且不区分大小写
+
+# 配置自定义拦截器的拦截路径
+interceptor:
+  backend:
+    # 检查登录拦截器
+    check-login-interceptor:
+      interceptPaths: [ /backend/** ]
+      excludePaths: [ /backend/api/**,/backend/images/**,/backend/js/**,/backend/plugins/**,/backend/styles/**,
+                      /favicon.ico, /error,
+                      /backend/page/login/login.html, /backend/employee/login ]
+    # 权限拦截器
+    permission-interceptor:
+      interceptPaths: [ /backend/employee/**,/backend/page/member/** ]
+      excludePaths: [ /backend/employee/login,/backend/employee/logout,/backend/employee/exist,/backend/employee/edit ]
+  front:
+    # 检查登录拦截器
+    check-login-interceptor:
+      interceptPaths: [ /front/** ]
+      excludePaths: [ /front/api/**,/front/fonts/**,/front/images/**,/front/js/**,/front/plugins/**,/front/styles/**,
+                      /favicon.ico, /error,
+                      /front/index.html,/front/page/login.html,
+                      /front/user/getCode/*,/front/user/login,/front/user/getCurrUser,
+                      /front/category/list,/front/commodity/list,/front/combo/list ]
+
+# 文件上传存放目录的路径
+file:
+  temp-path: C:\Users\Freedom\Desktop\Java_code\Mojito_SpringBoot\file\temp\
+  path: C:\Users\Freedom\Desktop\Java_code\Mojito_SpringBoot\file\
+
+# 邮件配置
+message:
+  subject: Mojito
+  template: |-
+    验证码：{}
+    该验证码3分钟内有效，请勿泄漏于他人！
+    --------------------------------------------------
+    Tip：如果此邮件在垃圾箱中，请随手点一下这不是垃圾邮件哦，要不然可能下次就收不到验证码了。
