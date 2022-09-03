@@ -23,12 +23,12 @@ spring:
 
   # 配置QQEmail
   mail:
-    host: smtp.qq.com                # SMTP服务器地址
-    port: 587                        # 端口号(465/587)
-    username: 1393429776@qq.com      # qq邮箱地址
-    password: bvztyhcarvwkhgbc       # 授权码
-    protocol: smtp                   # 类型，默认就smtp
-    default-encoding: UTF-8          # 字符集，默认UTF-8
+    host: smtp.qq.com                        # SMTP服务器地址
+    port: 587                                # 端口号(465/587)
+    username: mojito_chunter1024@qq.com      # 邮箱地址
+    password: srjvyeaqasrbjbdh               # 授权码
+    protocol: smtp                           # 类型，默认smtp
+    default-encoding: UTF-8                  # 字符集，默认UTF-8
 
 # 配置MybatisPlus
 mybatis-plus:
@@ -73,9 +73,9 @@ file:
 
 # 邮件配置
 message:
-  subject: Mojito
+  nickname: Mojito
+  subject: Mojito邮箱验证码
   template: |-
-    验证码：{}
-    该验证码3分钟内有效，请勿泄漏于他人！
-    --------------------------------------------------
+    验证码：{}，该验证码5分钟内有效。为了保障您的账户安全，请勿向他人泄漏验证码信息。
+    ------------------------------------------------------------
     Tip：如果此邮件在垃圾箱中，请随手点一下这不是垃圾邮件哦，要不然可能下次就收不到验证码了。
