@@ -57,7 +57,7 @@
           code: '',
           suffix: '@qq.com',
           countdown: -1,
-          isGot: false,
+          isGot: '',
         }
       },
       created() {},
@@ -73,7 +73,7 @@
           if (qqNumReg.test(this.qqNum)) {
             getCodeApi(this.qqNum + this.suffix).then(res => {
               if (res.code === 1) {
-                this.isGot = true
+                this.isGot = this.qqNum
                 // 进行倒计时
                 this.countdown = 60
                 let clock = window.setInterval(() => {
@@ -92,7 +92,7 @@
         },
         // 登录
         login() {
-          if (this.isGot) {
+          if (this.isGot === this.qqNum) {
             this.$toast.loading({
               duration: 0,
               forbidClick: true,
@@ -111,7 +111,8 @@
                   window.location.replace('/front/index.html')
                 })
               } else {
-                this.$toast.fail({forbidClick: true, message: res.msg})
+                this.$toast.clear()
+                this.$dialog.alert({title: '提示', message: res.msg})
               }
             })
           } else {

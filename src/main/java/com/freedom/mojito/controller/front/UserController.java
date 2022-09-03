@@ -9,6 +9,7 @@ import com.freedom.mojito.util.RandomUtils;
 import com.freedom.mojito.util.ValidateData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Description:
@@ -37,17 +39,25 @@ public class UserController {
     private UserService userService;
     @Autowired
     private EmailUtils emailUtils;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     /**
      * 根据邮箱地址生成验证码并发送出去
      *
      * @param email
-     * @param session
      * @return
      */
     @GetMapping("/getCode/{email}")
-    public Result<Object> sendCode(@PathVariable("email") String email, HttpSession session) {
+    public Result<Object> sendCode(@PathVariable("email") String email) {
         if (StringUtils.hasText(email)) {
+            String codeKey = email + "_code";
+            String againKey = email + "_again";
+            // 检查该邮箱地址在60秒内是否已获取过验证码
+            if (redisTemplate.opsForValue().get(againKey) != null) {
+                return Result.fail("操作过于频繁，请60秒后重试");
+            }
+
             // 生成随机6位数字验证码
             String code = RandomUtils.getNumStr(6);
             log.info("验证码：{}", code);
@@ -55,8 +65,9 @@ public class UserController {
             // 通过 Springboot mail 将验证码发送出去
 //            emailUtils.sendCode(email, code);
 
-            // 存放在session中，后期优化存放到redis中，并设置过期时间（如果过期时间还没到，则应该返回获取失败）
-            session.setAttribute(email, code);
+            // 存放到redis中，并设置验证码过期时间和可再次获取时间
+            redisTemplate.opsForValue().set(codeKey, code, 5, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(againKey, "", 60, TimeUnit.SECONDS);
             return Result.succeed(null);
         }
         return Result.fail("参数有误");
@@ -73,11 +84,12 @@ public class UserController {
     public Result<Object> login(@RequestBody Map<String, String> map, HttpSession session) {
         String email = map.get("email");
         String code = map.get("code");
-        // 从session中根据email获取验证码
-        Object correctCode = session.getAttribute(email);
+        // 从redis中根据email获取验证码
+        String codeKey = email + "_code";
+        Object correctCode = redisTemplate.opsForValue().get(codeKey);
 
         if (correctCode == null) {
-            return Result.fail("请先获取验证码");
+            return Result.fail("验证码已过期，请重新获取");
         }
         if (!Objects.equals(code, correctCode)) {
             return Result.fail("验证码错误");
@@ -153,9 +165,11 @@ public class UserController {
     public Result<String> updateUserEmail(@RequestBody Map<String, String> map, HttpSession session) {
         String email = map.get("email");
         String code = map.get("code");
-        Object correctCode = session.getAttribute(email);
+        // 从redis中根据email获取验证码
+        String codeKey = email + "_code";
+        Object correctCode = redisTemplate.opsForValue().get(codeKey);
         if (correctCode == null) {
-            return Result.fail("请先获取验证码");
+            return Result.fail("验证码已过期，请重新获取");
         }
         if (!Objects.equals(code, correctCode)) {
             return Result.fail("验证码错误");

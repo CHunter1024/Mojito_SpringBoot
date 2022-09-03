@@ -99,7 +99,7 @@
           code: '',
           suffix: '@qq.com',
           countdown: -1,
-          isGot: false,
+          isGot: '',
           dialogVisible: false
         }
       },
@@ -145,7 +145,7 @@
           if (qqNumReg.test(this.qqNum)) {
             getCodeApi(this.qqNum + '@qq.com').then(res => {
               if (res.code === 1) {
-                this.isGot = true
+                this.isGot = this.qqNum
                 // 进行倒计时
                 this.countdown = 60
                 let clock = window.setInterval(() => {
@@ -169,7 +169,7 @@
             this.$toast('请输入QQ号码')
             return
           }
-          if (!this.isGot) {
+          if (this.isGot !== this.qqNum) {
             this.$toast('请先获取验证码')
             return
           }
