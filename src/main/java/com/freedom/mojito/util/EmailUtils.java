@@ -3,7 +3,6 @@ package com.freedom.mojito.util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
@@ -21,10 +20,12 @@ import org.springframework.stereotype.Component;
 public class EmailUtils {
 
     @Autowired
-    private MailProperties mailProperties;
-    @Autowired
     private JavaMailSender javaMailSender;
 
+    @Value("${spring.mail.username}")
+    private String username;  // 发信地址
+    @Value("${message.nickname}")
+    private String nickname;  // 发信昵称
     @Value("${message.subject}")
     private String subject;  // 主题
     @Value("${message.template}")
@@ -39,9 +40,9 @@ public class EmailUtils {
     public void sendCode(String email, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
 
-        message.setFrom(mailProperties.getUsername());  // 发送人
+        message.setFrom(nickname + "<" + username + ">");  // 发件人
         message.setTo(email);  // 收件人
-        message.setSubject(subject);  // 标题
+        message.setSubject(subject);  // 主题
         message.setText(template.replace("{}", code));  // 内容
 
         javaMailSender.send(message);
