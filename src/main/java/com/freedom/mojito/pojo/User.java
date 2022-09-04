@@ -8,7 +8,6 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -21,10 +20,8 @@ import java.time.LocalDateTime;
 
 @TableName(value ="user")
 @Data
-public class User implements Serializable {
+public class User {
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 7L;
     /**
      * 主键
      */

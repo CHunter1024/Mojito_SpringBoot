@@ -8,9 +8,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
-import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -24,10 +22,8 @@ import java.time.LocalDateTime;
 
 @TableName(value ="shopping_cart")
 @Data
-public class ShoppingCart implements Serializable {
+public class ShoppingCart {
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 8L;
     /**
      * 主键
      */

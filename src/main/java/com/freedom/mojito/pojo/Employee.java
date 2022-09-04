@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Pattern;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -26,10 +25,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee implements Serializable {
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
+public class Employee {
 
     /**
      * 主键

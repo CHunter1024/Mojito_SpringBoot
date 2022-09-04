@@ -1,13 +1,11 @@
 package com.freedom.mojito.pojo;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -21,10 +19,7 @@ import java.time.LocalDateTime;
 
 @TableName(value = "`order`")
 @Data
-public class Order implements Serializable {
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 10L;
+public class Order {
 
     /**
      * 主键

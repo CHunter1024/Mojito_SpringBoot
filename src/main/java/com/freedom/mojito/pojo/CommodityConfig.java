@@ -3,7 +3,6 @@ package com.freedom.mojito.pojo;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -16,10 +15,7 @@ import java.time.LocalDateTime;
 
 @TableName(value ="commodity_config")
 @Data
-public class CommodityConfig implements Serializable {
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 4L;
+public class CommodityConfig {
 
     /**
      * 主键

@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.PositiveOrZero;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -20,10 +19,8 @@ import java.time.LocalDateTime;
 
 @TableName(value ="commodity")
 @Data
-public class Commodity implements Serializable {
+public class Commodity {
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 3L;
     /**
      * 主键
      */

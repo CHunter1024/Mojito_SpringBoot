@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Pattern;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -19,10 +18,8 @@ import java.time.LocalDateTime;
 
 @TableName(value ="address_book")
 @Data
-public class AddressBook implements Serializable {
+public class AddressBook {
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 9L;
     /**
      * 主键
      */

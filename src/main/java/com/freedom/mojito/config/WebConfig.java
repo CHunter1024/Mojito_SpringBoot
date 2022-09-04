@@ -78,15 +78,4 @@ public class WebConfig implements WebMvcConfigurer {
         converters.add(0, messageConverter);
     }
 
-    /**
-     * 扩展MVC框架的参数转换器
-     *
-     * @param registry
-     */
-//    @Override
-//    public void addFormatters(FormatterRegistry registry) {
-//        registry.addConverter((Converter<String, LocalDateTime>) source -> LocalDateTime.parse(source, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-//        registry.addConverter((Converter<String, LocalDate>) source -> LocalDate.parse(source, DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-//        registry.addConverter((Converter<String, LocalTime>) source -> LocalTime.parse(source, DateTimeFormatter.ofPattern("HH:mm:ss")));
-//    }
 }

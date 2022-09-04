@@ -6,7 +6,6 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Positive;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -19,10 +18,8 @@ import java.time.LocalDateTime;
 
 @TableName(value = "category")
 @Data
-public class Category implements Serializable {
+public class Category {
 
-    @TableField(exist = false)
-    private static final long serialVersionUID = 2L;
     /**
      * 主键
      */
