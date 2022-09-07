@@ -85,16 +85,8 @@ public class CommodityController {
      */
     @PutMapping("/{status}")
     public Result<Object> updateCommodityStatus(@PathVariable("status") Integer status, @RequestBody List<Long> ids) {
-        // stream 流处理参数
-        List<Commodity> commodityList = ids.stream().map(id -> {
-            Commodity commodity = new Commodity();
-            commodity.setId(id);
-            commodity.setStatus(status);
-            return commodity;
-        }).collect(Collectors.toList());
-        boolean result = commodityService.updateBatchById(commodityList);
-
-        return result ? Result.succeed(null) : Result.fail("参数有误");
+        commodityService.updateStatusBatch(ids, status);
+        return Result.succeed(null);
     }
 
     /**

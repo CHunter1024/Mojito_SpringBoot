@@ -67,6 +67,14 @@ public interface CommodityService extends IService<Commodity> {
     void removeWithConfigs(List<Long> ids);
 
     /**
+     * 批量修改商品状态
+     *
+     * @param ids    商品id
+     * @param status 商品状态
+     */
+    void updateStatusBatch(List<Long> ids, Integer status);
+
+    /**
      * 根据条件查询商品信息，同时查询对应的商品配置
      *
      * @param commodity 条件信息

@@ -14,6 +14,7 @@ import com.freedom.mojito.service.CommodityService;
 import com.freedom.mojito.util.ImageUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,6 +25,8 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +47,8 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
     private CommodityConfigMapper commodityConfigMapper;
     @Autowired
     private ImageUtils imageUtils;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void saveWithConfigs(CommodityDto commodityDto) throws IOException {
@@ -59,6 +64,10 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
 
         // 将图片文件从临时目录移动到上传目录
         imageUtils.saveNewImage(commodityDto.getImage(), null);
+
+        // 删除该商品分类下的缓存数据
+        removeCacheByCategoryId(commodityDto.getCategoryId());
+
     }
 
     @Override
@@ -109,6 +118,9 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
 
         // 新旧图片处理
         imageUtils.handleOldNewImage(oldImageName, newImageName, null);
+
+        // 删除该商品分类下的缓存数据
+        removeCacheByCategoryId(commodityDto.getCategoryId());
     }
 
     @Override
@@ -128,19 +140,48 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
 
     @Override
     public void removeWithConfigs(List<Long> ids) {
+        List<Long> categoryIds = ids.stream().map(id -> getById(id).getCategoryId()).collect(Collectors.toList());
         // 删除商品
         removeByIds(ids, false);
         // 删除商品配置
         LambdaUpdateWrapper<CommodityConfig> wrapper = new LambdaUpdateWrapper<>();
         wrapper.in(CommodityConfig::getCommodityId, ids);
         commodityConfigService.remove(wrapper);
+
+        // 删除这些商品分类下的缓存数据
+        categoryIds.forEach(this::removeCacheByCategoryId);
+
+    }
+
+    @Override
+    public void updateStatusBatch(List<Long> ids, Integer status) {
+        List<Commodity> commodityList = ids.stream().map(id -> {
+            Commodity commodity = new Commodity();
+            commodity.setId(id);
+            commodity.setStatus(status);
+            return commodity;
+        }).collect(Collectors.toList());
+        updateBatchById(commodityList);
+
+        // 删除这些商品分类下的缓存数据
+        ids.forEach(id -> removeCacheByCategoryId(getById(id).getCategoryId()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<CommodityDto> getWithConfigsByCondition(Commodity commodity) {
+        // 从Redis中获取缓存数据
+        String key = "commodities:" + "categoryId:" + commodity.getCategoryId() + "status:" + commodity.getStatus();
+        List<CommodityDto> commodityDtoList = (List<CommodityDto>) redisTemplate.opsForValue().get(key);
+        // 如果存在，则无需查询数据库，返回获取到的缓存数据
+        if (commodityDtoList != null) {
+            return commodityDtoList;
+        }
+        // 如果不存在，则查询数据库，且将查询到的数据缓存到Redis中
         List<Commodity> commodityList = getByCondition(commodity);
-        return commodityList.stream().map(this::buildDto).collect(Collectors.toList());
+        commodityDtoList = commodityList.stream().map(this::buildDto).collect(Collectors.toList());
+        redisTemplate.opsForValue().set(key, commodityDtoList, 30, TimeUnit.MINUTES);
+        return commodityDtoList;
     }
 
     @Override
@@ -174,5 +215,16 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
         BeanUtils.copyProperties(commodity, commodityDto);  // 将 commodity 属性内容赋值给 commodityDto（浅拷贝）
         commodityDto.setConfigs(configs);
         return commodityDto;
+    }
+
+    /**
+     * 删除指定商品分类下的商品缓存数据
+     *
+     * @param categoryId
+     */
+    public void removeCacheByCategoryId(Long categoryId) {
+        String pattern = "commodities:" + "categoryId:" + categoryId + "*";
+        Set<String> keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
     }
 }
