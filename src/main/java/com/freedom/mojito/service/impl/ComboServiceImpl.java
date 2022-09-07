@@ -17,6 +17,8 @@ import com.freedom.mojito.service.CommodityConfigService;
 import com.freedom.mojito.util.ImageUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -52,6 +54,7 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
     private ImageUtils imageUtils;
 
     @Override
+    @CacheEvict(value = "combos", key = "'categoryId:' + #comboDto.getCategoryId() + 'status:1'")
     public void saveWithCommoditiesAndConfigs(ComboDto comboDto) throws IOException {
 
         // 保存套餐信息
@@ -101,6 +104,7 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
     }
 
     @Override
+    @CacheEvict(value = "combos", key = "'categoryId:' + #comboDto.getCategoryId() + 'status:1'")
     public void updateWithCommoditiesAndConfigs(ComboDto comboDto) throws IOException {
         String oldImageName = getById(comboDto.getId()).getImage();
         String newImageName = comboDto.getImage();
@@ -135,6 +139,7 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
     }
 
     @Override
+    @CacheEvict(value = "combos", allEntries = true)  // 删除所有套餐的缓存数据
     public void removeWithCommoditiesAndConfigs(List<Long> ids) {
         // 删除套餐
         removeByIds(ids, false);
@@ -149,7 +154,20 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
     }
 
     @Override
+    @CacheEvict(value = "combos", allEntries = true)
+    public void updateStatusBatch(List<Long> ids, Integer status) {
+        List<Combo> comboList = ids.stream().map(id -> {
+            Combo combo = new Combo();
+            combo.setId(id);
+            combo.setStatus(status);
+            return combo;
+        }).collect(Collectors.toList());
+        updateBatchById(comboList);
+    }
+
+    @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "combos", key = "'categoryId:' + #combo.getCategoryId() + 'status:' + #combo.getStatus()")
     public List<ComboDto> getWithConfigsAndCommoditiesByCondition(Combo combo) {
         LambdaQueryWrapper<Combo> wrapper = new LambdaQueryWrapper<>();
         // 根据套餐分类id查询

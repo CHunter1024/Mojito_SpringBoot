@@ -85,16 +85,8 @@ public class ComboController {
      */
     @PutMapping("/{status}")
     public Result<Object> updateComboStatus(@PathVariable("status") Integer status, @RequestBody List<Long> ids) {
-        // stream 流处理参数
-        List<Combo> comboList = ids.stream().map(id -> {
-            Combo combo = new Combo();
-            combo.setId(id);
-            combo.setStatus(status);
-            return combo;
-        }).collect(Collectors.toList());
-        boolean result = comboService.updateBatchById(comboList);
-
-        return result ? Result.succeed(null) : Result.fail("参数有误");
+        comboService.updateStatusBatch(ids, status);
+        return Result.succeed(null);
     }
 
     /**

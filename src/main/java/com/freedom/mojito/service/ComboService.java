@@ -61,6 +61,14 @@ public interface ComboService extends IService<Combo> {
     void removeWithCommoditiesAndConfigs(List<Long> ids);
 
     /**
+     * 批量修改套餐状态
+     *
+     * @param ids    套餐id
+     * @param status 套餐状态
+     */
+    void updateStatusBatch(List<Long> ids, Integer status);
+
+    /**
      * 根据条件查询套餐信息，同时查询对应的套餐商品和套餐配置
      *
      * @param combo 条件信息
