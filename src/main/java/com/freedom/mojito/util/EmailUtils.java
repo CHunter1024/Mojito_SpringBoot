@@ -22,6 +22,8 @@ public class EmailUtils {
     @Autowired
     private JavaMailSender javaMailSender;
 
+    @Value("${message.send}")
+    private boolean send;  // 是否发送
     @Value("${spring.mail.username}")
     private String username;  // 发信地址
     @Value("${message.nickname}")
@@ -38,6 +40,10 @@ public class EmailUtils {
      * @param code  验证码
      */
     public void sendCode(String email, String code) {
+        if (!send) {
+            log.warn("邮件设置不发送");
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
 
         message.setFrom(nickname + "<" + username + ">");  // 发件人

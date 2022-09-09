@@ -32,8 +32,8 @@ spring:
 
   # 配置Redis
   redis:
-    host: CentOS7              # Redis服务器地址
-    port: 6379                 # Redis服务器连接端口
+    host: 43.143.57.111        # Redis服务器地址
+    port: 6666                 # Redis服务器连接端口
     password: akakak           # Redis服务器连接密码
     database: 0                # Redis数据库索引（默认为0）
   cache:
@@ -78,12 +78,12 @@ interceptor:
 
 # 文件上传存放目录的路径
 file:
-  temp-path: C:\Users\Freedom\Desktop\Java_code\Mojito_SpringBoot\file\temp\
-  path: C:\Users\Freedom\Desktop\Java_code\Mojito_SpringBoot\file\
+  temp-path: /opt/app/Mojito_SpringBoot/file/temp/
+  path: /opt/app/Mojito_SpringBoot/file/
 
 # 邮件配置
 message:
-  send: false
+  send: true
   nickname: Mojito
   subject: Mojito邮箱验证码
   template: |-

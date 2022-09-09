@@ -63,7 +63,7 @@ public class UserController {
             log.info("验证码：{}", code);
 
             // 通过 Springboot mail 将验证码发送出去
-//            emailUtils.sendCode(email, code);
+            emailUtils.sendCode(email, code);
 
             // 存放到redis中，并设置验证码过期时间和可再次获取时间
             redisTemplate.opsForValue().set(codeKey, code, 5, TimeUnit.MINUTES);
