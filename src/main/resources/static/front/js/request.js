@@ -77,4 +77,3 @@
   )
   win.$axios = service
 })(window);
-

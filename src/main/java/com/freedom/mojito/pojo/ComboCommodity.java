@@ -1,6 +1,8 @@
 package com.freedom.mojito.pojo;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,68 +16,47 @@ import java.time.LocalDateTime;
  * @author Chb
  */
 
-@TableName(value ="combo_commodity")
+@ApiModel("套餐商品关系")
+@TableName(value = "combo_commodity")
 @Data
 public class ComboCommodity {
 
-    /**
-     * 主键
-     */
+    @ApiModelProperty("主键")
     @TableId
     private Long id;
 
-    /**
-     * 套餐id 
-     */
+    @ApiModelProperty("套餐id")
     private Long comboId;
 
-    /**
-     * 商品id
-     */
+    @ApiModelProperty("商品id")
     private Long commodityId;
 
-    /**
-     * 商品名称(冗余字段)
-     */
+    @ApiModelProperty("商品名称(冗余字段)")
     private String commodityName;
 
-    /**
-     * 商品价格(冗余字段)
-     */
+    @ApiModelProperty("商品价格(冗余字段)")
     private BigDecimal commodityPrice;
 
-    /**
-     * 份数
-     */
+    @ApiModelProperty("份数")
     private Integer copies;
 
-    /**
-     * 创建时间
-     */
+    @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    /**
-     * 更新时间
-     */
+    @ApiModelProperty("更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    /**
-     * 创建人
-     */
+    @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
-    /**
-     * 修改人
-     */
+    @ApiModelProperty("修改人")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
-    /**
-     * 逻辑删除
-     */
+    @ApiModelProperty(value = "逻辑删除", hidden = true)
     @TableLogic
     private Integer isDeleted;
 

@@ -6,6 +6,7 @@ import com.freedom.mojito.dto.EmployeeDto;
 import com.freedom.mojito.pojo.Employee;
 import com.freedom.mojito.service.EmployeeService;
 import com.freedom.mojito.util.ValidateData;
+import io.swagger.annotations.*;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -23,6 +24,7 @@ import java.util.List;
  * @author Chb
  */
 
+@Api(tags = "员工相关API")
 @RestController
 @RequestMapping("/backend/employee")
 public class EmployeeController {
@@ -30,15 +32,13 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    /**
-     * 员工登录
-     *
-     * @param employeeDto
-     * @param session
-     * @return
-     */
+    @Autowired
+    private HttpSession session;
+
+
+    @ApiOperation(value = "员工登录", notes = "必要参数：loginId（帐号/手机号码），password（密码）")
     @PostMapping("/login")
-    public Result<Employee> login(@RequestBody EmployeeDto employeeDto, HttpSession session) {
+    public Result<Employee> login(@RequestBody EmployeeDto employeeDto) {
         // 1、根据页面提交的帐号或手机号码查询数据库，如果没有查询到返回用户不存在结果
         Employee employee = employeeService.getByAccountOrPhoneNumber(employeeDto.getLoginId());
         if (employee == null) {
@@ -60,26 +60,21 @@ public class EmployeeController {
         return Result.succeed(employee);
     }
 
-    /**
-     * 员工登出
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("员工登出")
     @PostMapping("/logout")
-    public Result<Object> logout(HttpSession session) {
+    public Result<Object> logout() {
         // 移出session中保存的当前登录员工
         session.removeAttribute("employee");
         return Result.succeed(null);
     }
 
-    /**
-     * 查询唯一的属性值是否存在
-     *
-     * @param field
-     * @param value
-     * @return
-     */
+
+    @ApiOperation("查询唯一的属性值是否存在")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "field", value = "属性名称", required = true, paramType = "query", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "value", value = "属性值", required = true, paramType = "query", dataTypeClass = String.class)
+    })
     @GetMapping("/exist")
     public Result<Boolean> onlyExist(String field, String value) {
         if ("account".equals(field) || "phone_number".equals(field)) {
@@ -88,16 +83,10 @@ public class EmployeeController {
         return Result.fail("非法参数");
     }
 
-    /**
-     * 修改当前员工信息
-     *
-     * @param employeeDto
-     * @param validResults
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("修改当前员工信息")
     @PutMapping("/edit")
-    public Result<Object> updateCurrentEmployee(@RequestBody @Validated EmployeeDto employeeDto, BindingResult validResults, HttpSession session) {
+    public Result<Object> updateCurrentEmployee(@RequestBody @Validated EmployeeDto employeeDto, BindingResult validResults) {
         Employee currEmp = (Employee) session.getAttribute("employee");
         // 判断是否修改密码
         if (employeeDto.getOldPassword() != null) {
@@ -116,13 +105,8 @@ public class EmployeeController {
         return Result.succeed(null);
     }
 
-    /**
-     * 添加员工
-     *
-     * @param employee
-     * @param validResults
-     * @return
-     */
+
+    @ApiOperation("添加员工")
     @PostMapping
     public Result<Object> saveEmployee(@RequestBody @Validated Employee employee, BindingResult validResults) {
         // 处理校验数据结果
@@ -135,39 +119,31 @@ public class EmployeeController {
         return Result.succeed(null);
     }
 
-    /**
-     * 分页 + 条件 查询员工信息
-     *
-     * @param page
-     * @param pageSize
-     * @param username
-     * @return
-     */
+
+    @ApiOperation(value = "分页+条件查询员工信息", notes = "条件：员工姓名关键字（username）")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "pageSize", value = "页尺寸", required = true, paramType = "query", dataTypeClass = Integer.class)
+    })
     @GetMapping("/page")
-    public Result<Page<Employee>> getEmployeesPage(Integer page, Integer pageSize, String username) {
-        Page<Employee> pageInfo = employeeService.getPageInfo(page, pageSize, username);
+    public Result<Page<Employee>> getEmployeesPage(Integer page, Integer pageSize, Employee employee) {
+        Page<Employee> pageInfo = employeeService.getPageInfo(page, pageSize, employee);
         return Result.succeed(pageInfo);
     }
 
-    /**
-     * 根据Id查询员工信息
-     *
-     * @param id
-     * @return
-     */
+
+    @ApiOperation("根据Id查询员工信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
+    })
     @GetMapping("/{id}")
     public Result<Employee> getEmployeeById(@PathVariable("id") Long id) {
         Employee employee = employeeService.getById(id);
         return employee != null ? Result.succeed(employee) : Result.fail("参数有误");
     }
 
-    /**
-     * 修改员工信息
-     *
-     * @param employee
-     * @param validResults
-     * @return
-     */
+
+    @ApiOperation("修改员工信息")
     @PutMapping
     public Result<Object> updateEmployee(@RequestBody @Validated Employee employee, BindingResult validResults) {
         // 处理校验数据结果

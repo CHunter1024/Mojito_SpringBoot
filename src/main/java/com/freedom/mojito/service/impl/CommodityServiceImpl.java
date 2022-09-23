@@ -11,12 +11,11 @@ import com.freedom.mojito.pojo.Commodity;
 import com.freedom.mojito.pojo.CommodityConfig;
 import com.freedom.mojito.service.CommodityConfigService;
 import com.freedom.mojito.service.CommodityService;
-import com.freedom.mojito.util.ImageUtils;
+import com.freedom.mojito.util.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,8 +26,6 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +45,7 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
     @Autowired
     private CommodityConfigMapper commodityConfigMapper;
     @Autowired
-    private ImageUtils imageUtils;
+    private FileUtils fileUtils;
 
     @Override
     @CacheEvict(value = "commodities", key = "'categoryId:' + #commodityDto.getCategoryId() + 'status:1'")
@@ -64,7 +61,7 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
         commodityConfigService.saveBatch(configs);
 
         // 将图片文件从临时目录移动到上传目录
-        imageUtils.saveNewImage(commodityDto.getImage(), null);
+        fileUtils.saveNewFile(commodityDto.getImage(), null);
     }
 
     @Override
@@ -75,7 +72,7 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
         LambdaQueryWrapper<Commodity> wrapper = new LambdaQueryWrapper<>();
         // 商品名称关键字查询
         wrapper.like(StringUtils.hasText(commodityDto.getName()), Commodity::getName, commodityDto.getName())
-                // 商品分类id查询
+                // 商品分类ids查询
                 .in(!CollectionUtils.isEmpty(commodityDto.getCategoryIds()), Commodity::getCategoryId, commodityDto.getCategoryIds())
                 .orderByDesc(Commodity::getSales).orderByDesc(Commodity::getUpdateTime);
 
@@ -115,7 +112,7 @@ public class CommodityServiceImpl extends ServiceImpl<CommodityMapper, Commodity
         commodityConfigMapper.trueDeleteByIdsAndCommodityId(ids, commodityDto.getId());
 
         // 新旧图片处理
-        imageUtils.handleOldNewImage(oldImageName, newImageName, null);
+        fileUtils.handleOldNewFile(oldImageName, newImageName, null);
     }
 
     @Override

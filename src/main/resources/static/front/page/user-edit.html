@@ -227,7 +227,7 @@
         },
         // 获取头像图片文件的URL
         getAvatar(avatar) {
-          return avatar ? `/common/download?file=avatar${encodeURIComponent('\\')}${avatar}` : '../images/avatar.png'
+          return avatar ? `/common/download?fileName=${avatar}&subDir=avatar` : '../images/avatar.png'
         },
 
         // 返回上一个页面

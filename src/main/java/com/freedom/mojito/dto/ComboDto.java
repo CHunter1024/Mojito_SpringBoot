@@ -3,6 +3,8 @@ package com.freedom.mojito.dto;
 import com.freedom.mojito.pojo.Combo;
 import com.freedom.mojito.pojo.ComboCommodity;
 import com.freedom.mojito.pojo.CommodityConfig;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -16,21 +18,16 @@ import java.util.List;
  */
 
 @Data
+@ApiModel("套餐信息DTO")
 public class ComboDto extends Combo {
 
-    /**
-     * 套餐商品
-     */
+    @ApiModelProperty("套餐商品")
     private List<ComboCommodity> commodities;
 
-    /**
-     * 套餐配置
-     */
+    @ApiModelProperty("套餐配置")
     private List<CommodityConfig> configs;
 
-    /**
-     * 分类Ids
-     */
+    @ApiModelProperty("分类Ids")
     private List<Long> categoryIds;
 
 }

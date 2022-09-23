@@ -5,6 +5,8 @@ import com.freedom.mojito.pojo.ShoppingCart;
 import com.freedom.mojito.pojo.User;
 import com.freedom.mojito.service.ShoppingCartService;
 import com.freedom.mojito.util.ValidateData;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -21,22 +23,20 @@ import java.util.List;
  * @author Chb
  */
 
+@Api(tags = "用户购物车相关API")
 @RestController
 @RequestMapping("/front/shoppingCart")
 public class ShoppingCartController {
 
     @Autowired
     private ShoppingCartService shoppingCartService;
+    @Autowired
+    private HttpSession session;
 
-    /**
-     * 将商品添加到购物车中
-     *
-     * @param shoppingCart
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("将商品添加到购物车中")
     @PostMapping
-    public Result<Object> addCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults, HttpSession session) {
+    public Result<Object> addCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
         if (errMsg != null) {
             return Result.fail(errMsg.toString());
@@ -47,38 +47,26 @@ public class ShoppingCartController {
         return Result.succeed(null);
     }
 
-    /**
-     * 获取购物车中的商品信息
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("获取购物车中的商品信息")
     @GetMapping
-    public Result<List<ShoppingCart>> getCart(HttpSession session) {
+    public Result<List<ShoppingCart>> getCart() {
         User user = (User) session.getAttribute("user");
         List<ShoppingCart> carts = shoppingCartService.getByUserId(user.getId());
         return Result.succeed(carts);
     }
 
-    /**
-     * 删除购物车中的商品
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("删除购物车中的商品")
     @DeleteMapping
-    public Result<Object> clearCart(HttpSession session) {
+    public Result<Object> clearCart() {
         User user = (User) session.getAttribute("user");
         shoppingCartService.removeByUserId(user.getId());
         return Result.succeed(null);
     }
 
-    /**
-     * 修改购物车中指定商品的数量
-     *
-     * @param shoppingCart
-     * @return
-     */
+
+    @ApiOperation("修改购物车中指定商品的数量")
     @PutMapping
     public Result<Object> updateCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);

@@ -44,13 +44,15 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Employee> getPageInfo(Integer page, Integer pageSize, String username) {
+    public Page<Employee> getPageInfo(Integer page, Integer pageSize, Employee employee) {
         // 设置分页参数
         Page<Employee> pageInfo = new Page<>(page, pageSize);
 
         // 构造查询条件
         LambdaQueryWrapper<Employee> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.hasText(username), Employee::getUsername, username).orderByDesc(Employee::getUpdateTime);
+        // 员工姓名关键字查询
+        wrapper.like(StringUtils.hasText(employee.getUsername()), Employee::getUsername, employee.getUsername())
+                .orderByDesc(Employee::getUpdateTime);
 
         // 进行查询
         return page(pageInfo, wrapper);

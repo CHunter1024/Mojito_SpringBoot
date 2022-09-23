@@ -2,6 +2,8 @@ package com.freedom.mojito.dto;
 
 import com.freedom.mojito.pojo.Commodity;
 import com.freedom.mojito.pojo.CommodityConfig;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -15,16 +17,13 @@ import java.util.List;
  */
 
 @Data
+@ApiModel("商品信息DTO")
 public class CommodityDto extends Commodity {
 
-    /**
-     * 商品配置
-     */
+    @ApiModelProperty("商品配置")
     private List<CommodityConfig> configs;
 
-    /**
-     * 分类Ids
-     */
+    @ApiModelProperty("分类Ids")
     private List<Long> categoryIds;
 
 }

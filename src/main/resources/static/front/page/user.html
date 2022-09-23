@@ -156,12 +156,12 @@
 
         // 获取商品图片文件的URL
         getImage(image) {
-          return image ? `/common/download?file=${image}` : ''
+          return image ? `/common/download?fileName=${image}` : ''
         },
 
         // 获取头像图片文件的URL
         getAvatar(avatar) {
-          return avatar ? `/common/download?file=avatar${encodeURIComponent('\\')}${avatar}` : '../images/avatar.png'
+          return avatar ? `/common/download?fileName=${avatar}&subDir=avatar` : '../images/avatar.png'
         },
 
         toUserEditPage() {

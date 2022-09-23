@@ -1,5 +1,7 @@
 package com.freedom.mojito.common;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -11,21 +13,16 @@ import lombok.Data;
  */
 
 @Data
+@ApiModel("请求结果")
 public class Result<T> {
 
-    /**
-     * 响应编码：1成功，0或其他数字为失败
-     */
+    @ApiModelProperty("响应编码：1为成功，0或其他数字为失败")
     private Integer code;
 
-    /**
-     * 错误信息
-     */
+    @ApiModelProperty("错误信息")
     private String msg;
 
-    /**
-     * 数据
-     */
+    @ApiModelProperty("数据")
     private T data;
 
     /**

@@ -3,6 +3,11 @@ server:
   port: 8080
 
 spring:
+  # 配置mvc
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher  # 映射匹配策略（使用knife4j需要设置为ant_path_matcher）
+
   shardingsphere:
     # 配置多数据源环境
     datasource:
@@ -31,19 +36,16 @@ spring:
     # 主从配置（读写分离）
     masterslave:
       load-balance-algorithm-type: round_robin  #轮询
-      # 最终的数据源名称
-      name: dataSource
-      # 主库数据源名称
-      master-data-source-name: master
-      # 从库数据源名称列表，多个逗号分隔
-      slave-data-source-names: slave
+      name: dataSource                          # 最终的数据源名称
+      master-data-source-name: master           # 主库数据源名称
+      slave-data-source-names: slave            # 从库数据源名称列表，多个逗号分隔
 
   servlet:
     multipart:
       max-file-size: 10MB     #  最大支持上传文件大小(默认1MB)
       max-request-size: 10MB  #  最大支持请求文件大小(默认10MB)
 
-  # 配置QQEmail
+  # 配置mail
   mail:
     host: smtp.qq.com                        # SMTP服务器地址
     port: 587                                # 端口号(465/587)
@@ -55,7 +57,7 @@ spring:
   # 配置Redis
   redis:
     host: CentOS7              # Redis服务器地址
-    port: 6379                 # Redis服务器连接端口
+    port: 6666                 # Redis服务器连接端口
     password: akakak           # Redis服务器连接密码
     database: 0                # Redis数据库索引（默认为0）
   cache:
@@ -112,3 +114,14 @@ message:
     验证码：{}，该验证码5分钟内有效。为了保障您的账户安全，请勿向他人泄漏验证码信息。
     ------------------------------------------------------------
     Tip：如果此邮件在垃圾箱中，请随手点一下这不是垃圾邮件哦，要不然可能下次就收不到验证码了。
+
+# 配置knife4j
+knife4j:
+
+  # 开启增强
+  enable: true
+  # 开启登录认证
+  basic:
+    enable: true
+    username: admin
+    password: 123456

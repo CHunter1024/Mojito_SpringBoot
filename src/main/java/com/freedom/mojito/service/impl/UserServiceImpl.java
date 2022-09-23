@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.freedom.mojito.mapper.UserMapper;
 import com.freedom.mojito.pojo.User;
 import com.freedom.mojito.service.UserService;
-import com.freedom.mojito.util.ImageUtils;
+import com.freedom.mojito.util.FileUtils;
 import com.freedom.mojito.util.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 /**
  * Description: 针对表【user(用户信息)】的数据库操作Service实现
@@ -28,7 +27,7 @@ import java.time.LocalDateTime;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Autowired
-    private ImageUtils imageUtils;
+    private FileUtils fileUtils;
 
     @Override
     public User login(String email) {
@@ -66,7 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 更新用户信息
         updateById(user);
         // 新旧头像图片处理
-        imageUtils.handleOldNewImage(oldAvatar, newAvatar, "avatar\\");
+        fileUtils.handleOldNewFile(oldAvatar, newAvatar, "avatar");
 
         return getById(user.getId());
     }

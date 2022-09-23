@@ -1,11 +1,13 @@
 package com.freedom.mojito.controller;
 
 import com.freedom.mojito.common.Result;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.freedom.mojito.util.FileUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -25,22 +27,17 @@ import java.util.UUID;
  * @author Chb
  */
 
+@Api(tags = "通用相关API")
 @RestController
 public class CommonController {
 
-    @Value("${file.temp-path}")
-    private String tempPath;  // 临时存放目录
-    @Value("${file.path}")
-    private String path;  // 真正存放目录
+    @Autowired
+    private FileUtils fileUtils;
 
-    /**
-     * 文件上传
-     *
-     * @param file
-     * @return
-     */
-    @PostMapping(path = {"/backend/common/upload", "front/common/upload"})
-    private Result<String> upload(MultipartFile file) throws IOException {
+
+    @ApiOperation(value = "文件上传", notes = "请求处理成功返回文件名")
+    @PostMapping("/**/common/upload")
+    private Result<String> upload(@RequestPart MultipartFile file) throws IOException {
         // 获取上传文件的文件名
         String originalFilename = file.getOriginalFilename();
         assert originalFilename != null;
@@ -50,25 +47,28 @@ public class CommonController {
         String fileName = UUID.randomUUID() + suffix;
 
         // 保存文件到临时目录中
-        Path path = Paths.get(tempPath);
+        String tempDir = fileUtils.getTempDir();
+        Path path = Paths.get(tempDir);
         if (Files.notExists(path)) {
             Files.createDirectory(path);
         }
-        file.transferTo(Paths.get(tempPath, fileName));
+        file.transferTo(Paths.get(tempDir, fileName));
 
         return Result.succeed(fileName);
     }
 
-    /**
-     * 文件下载
-     *
-     * @param file
-     * @param response
-     */
+
+    @ApiOperation("文件下载")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "fileName", value = "文件名", required = true, paramType = "query", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "subDir", value = "子目录（多层目录用,隔开）", paramType = "query", dataTypeClass = String.class)
+    })
     @GetMapping("/common/download")
-    private void download(String file, HttpServletResponse response) {
+    private void download(String fileName, @RequestParam(required = false) String subDir, HttpServletResponse response) {
+        String dir = fileUtils.getDir(subDir);
+
         try (// 输入流，通过输入流读取文件内容
-             InputStream inputStream = Files.newInputStream(Paths.get(path, file));
+             InputStream inputStream = Files.newInputStream(Paths.get(dir, fileName));
              // 输出流，通过输出流将文件写回浏览器
              OutputStream outputStream = response.getOutputStream()) {
             response.setContentType("image/*");

@@ -14,7 +14,7 @@ import com.freedom.mojito.pojo.CommodityConfig;
 import com.freedom.mojito.service.ComboCommodityService;
 import com.freedom.mojito.service.ComboService;
 import com.freedom.mojito.service.CommodityConfigService;
-import com.freedom.mojito.util.ImageUtils;
+import com.freedom.mojito.util.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -51,7 +51,7 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
     @Autowired
     private ComboCommodityMapper comboCommodityMapper;
     @Autowired
-    private ImageUtils imageUtils;
+    private FileUtils fileUtils;
 
     @Override
     @CacheEvict(value = "combos", key = "'categoryId:' + #comboDto.getCategoryId() + 'status:1'")
@@ -76,7 +76,7 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
         commodityConfigService.saveBatch(configs);
 
         // 将图片文件从临时目录移动到上传目录
-        imageUtils.saveNewImage(comboDto.getImage(), null);
+        fileUtils.saveNewFile(comboDto.getImage(), null);
 
     }
 
@@ -135,7 +135,7 @@ public class ComboServiceImpl extends ServiceImpl<ComboMapper, Combo> implements
         commodityConfigMapper.trueDeleteByIdsAndCommodityId(configIds, comboDto.getId());
 
         // 新旧图片处理
-        imageUtils.handleOldNewImage(oldImageName, newImageName, null);
+        fileUtils.handleOldNewFile(oldImageName, newImageName, null);
     }
 
     @Override

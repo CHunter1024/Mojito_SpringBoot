@@ -6,6 +6,7 @@ import com.freedom.mojito.dto.CommodityDto;
 import com.freedom.mojito.pojo.Commodity;
 import com.freedom.mojito.service.CommodityService;
 import com.freedom.mojito.util.ValidateData;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  * @author Chb
  */
 
+@Api(tags = "商品相关API（管理端）")
 @RestController("backend-commodityController")
 @RequestMapping("/backend/commodity")
 public class CommodityController {
@@ -30,14 +32,8 @@ public class CommodityController {
     @Autowired
     private CommodityService commodityService;
 
-    /**
-     * 保存商品信息
-     *
-     * @param commodityDto
-     * @param validResults
-     * @return
-     * @throws IOException
-     */
+
+    @ApiOperation("添加商品")
     @PostMapping
     public Result<Object> saveCommodity(@RequestBody @Validated CommodityDto commodityDto, BindingResult validResults) throws IOException {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
@@ -50,51 +46,42 @@ public class CommodityController {
         return Result.succeed(null);
     }
 
-    /**
-     * 分页 + 条件 查询商品信息
-     *
-     * @param page
-     * @param pageSize
-     * @param commodityDto
-     * @return
-     */
+
+    @ApiOperation(value = "分页+条件查询商品信息", notes = "条件：商品名称关键字（name）/ 商品分类ids（categoryIds）")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "pageSize", value = "页尺寸", required = true, paramType = "query", dataTypeClass = Integer.class)
+    })
     @GetMapping("/page")
     public Result<Page<Commodity>> getCommoditiesPage(Integer page, Integer pageSize, CommodityDto commodityDto) {
         Page<Commodity> pageInfo = commodityService.getPageInfo(page, pageSize, commodityDto);
         return Result.succeed(pageInfo);
     }
 
-    /**
-     * 单量或批量删除商品
-     *
-     * @param ids
-     * @return
-     */
+
+    @ApiOperation(value = "单量或批量删除商品", notes = "参数（json）：商品主键ids（ids）")
     @DeleteMapping
     public Result<Object> deleteCommodity(@RequestBody List<Long> ids) {
         commodityService.removeWithConfigs(ids);
         return Result.succeed(null);
     }
 
-    /**
-     * 单量或批量修改商品状态
-     *
-     * @param status
-     * @param ids
-     * @return
-     */
+
+    @ApiOperation(value = "单量或批量修改商品状态", notes = "参数（json）：商品主键ids（ids）")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "status", value = "新状态", required = true, paramType = "path", dataTypeClass = Integer.class)
+    })
     @PutMapping("/{status}")
     public Result<Object> updateCommodityStatus(@PathVariable("status") Integer status, @RequestBody List<Long> ids) {
         commodityService.updateStatusBatch(ids, status);
         return Result.succeed(null);
     }
 
-    /**
-     * 根据商品id查询商品信息
-     *
-     * @param id
-     * @return
-     */
+
+    @ApiOperation("根据id查询商品信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
+    })
     @GetMapping("/{id}")
     public Result<CommodityDto> getCommodityById(@PathVariable("id") Long id) {
         CommodityDto commodityDto = commodityService.getWithConfigsById(id);
@@ -103,14 +90,7 @@ public class CommodityController {
     }
 
 
-    /**
-     * 修改商品信息
-     *
-     * @param commodityDto
-     * @param validResults
-     * @return
-     * @throws IOException
-     */
+    @ApiOperation("修改商品信息")
     @PutMapping
     public Result<Object> updateCommodity(@RequestBody @Validated CommodityDto commodityDto, BindingResult validResults) throws IOException {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
@@ -123,12 +103,8 @@ public class CommodityController {
         return Result.succeed(null);
     }
 
-    /**
-     * 根据条件查询商品信息
-     *
-     * @param commodity
-     * @return
-     */
+
+    @ApiOperation(value = "根据条件查询商品信息", notes = "条件：商品分类id（categoryId）/ 商品名称关键字（name）/ 商品状态（status）")
     @GetMapping("/list")
     public Result<List<Commodity>> getCommodityList(Commodity commodity) {
         List<Commodity> commodityList = commodityService.getByCondition(commodity);

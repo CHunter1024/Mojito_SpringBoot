@@ -3,6 +3,8 @@ package com.freedom.mojito.dto;
 import com.freedom.mojito.pojo.AddressBook;
 import com.freedom.mojito.pojo.Order;
 import com.freedom.mojito.pojo.OrderDetail;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -16,16 +18,13 @@ import java.util.List;
  */
 
 @Data
+@ApiModel("订单信息DTO")
 public class OrderDto extends Order {
 
-    /**
-     * 订单明细
-     */
+    @ApiModelProperty("订单明细")
     private List<OrderDetail> details;
 
-    /**
-     * 下单地址
-     */
+    @ApiModelProperty("下单地址")
     private AddressBook address;
 
 }

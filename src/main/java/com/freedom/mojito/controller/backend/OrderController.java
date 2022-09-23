@@ -6,6 +6,10 @@ import com.freedom.mojito.dto.OrderDto;
 import com.freedom.mojito.pojo.Order;
 import com.freedom.mojito.service.OrderService;
 import com.freedom.mojito.util.ValidateData;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.BindingResult;
@@ -23,6 +27,7 @@ import java.util.List;
  * @author Chb
  */
 
+@Api(tags = "订单相关API（管理端）")
 @RestController("backend-orderController")
 @RequestMapping("/backend/order")
 public class OrderController {
@@ -30,16 +35,15 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    /**
-     * 分页 + 条件 查询订单信息
-     *
-     * @param page
-     * @param pageSize
-     * @param number
-     * @param beginTime
-     * @param endTime
-     * @return
-     */
+
+    @ApiOperation("分页+条件查询订单信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "pageSize", value = "页尺寸", required = true, paramType = "query", dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "number", value = "订单号", paramType = "query", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "beginTime", value = "开始时间", paramType = "query", dataTypeClass = LocalDateTime.class),
+            @ApiImplicitParam(name = "endTime", value = "结束时间", paramType = "query", dataTypeClass = LocalDateTime.class)
+    })
     @GetMapping("/page")
     public Result<Page<OrderDto>> getOrderPage(Integer page, Integer pageSize, String number,
                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime beginTime,
@@ -49,13 +53,7 @@ public class OrderController {
     }
 
 
-    /**
-     * 修改订单信息
-     *
-     * @param order
-     * @param validResults
-     * @return
-     */
+    @ApiOperation("修改订单信息")
     @PutMapping
     public Result<Object> updateOrder(@RequestBody @Validated Order order, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);

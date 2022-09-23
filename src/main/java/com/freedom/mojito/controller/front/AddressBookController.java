@@ -5,6 +5,10 @@ import com.freedom.mojito.pojo.AddressBook;
 import com.freedom.mojito.pojo.User;
 import com.freedom.mojito.service.AddressBookService;
 import com.freedom.mojito.util.ValidateData;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -21,23 +25,20 @@ import java.util.List;
  * @author Chb
  */
 
+@Api(tags = "用户地址相关API")
 @RestController
 @RequestMapping("/front/addressBook")
 public class AddressBookController {
 
     @Autowired
     private AddressBookService addressBookService;
+    @Autowired
+    private HttpSession session;
 
-    /**
-     * 当前用户添加地址
-     *
-     * @param address
-     * @param validResults
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("当前用户添加地址")
     @PostMapping
-    public Result<Object> addAddress(@RequestBody @Validated AddressBook address, BindingResult validResults, HttpSession session) {
+    public Result<Object> addAddress(@RequestBody @Validated AddressBook address, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
         if (errMsg != null) {
             return Result.fail(errMsg.toString());
@@ -50,40 +51,30 @@ public class AddressBookController {
         return Result.succeed(null);
     }
 
-    /**
-     * 获取当前用户下的所有地址
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("获取当前用户下的所有地址")
     @GetMapping
-    public Result<List<AddressBook>> getAddresses(HttpSession session) {
+    public Result<List<AddressBook>> getAddresses() {
         User currUser = (User) session.getAttribute("user");
         List<AddressBook> addressList = addressBookService.getAddressesByUserId(currUser.getId());
         return Result.succeed(addressList);
     }
 
-    /**
-     * 根据id获取地址
-     *
-     * @param id
-     * @return
-     */
+
+    @ApiOperation("根据id获取地址")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
+    })
     @GetMapping("/{id}")
     public Result<AddressBook> getAddressById(@PathVariable("id") Long id) {
         AddressBook address = addressBookService.getById(id);
         return Result.succeed(address);
     }
 
-    /**
-     * 修改当前用户地址
-     *
-     * @param address
-     * @param validResults
-     * @return
-     */
+
+    @ApiOperation("修改当前用户地址")
     @PutMapping
-    public Result<Object> updateAddress(@RequestBody @Validated AddressBook address, BindingResult validResults, HttpSession session) {
+    public Result<Object> updateAddress(@RequestBody @Validated AddressBook address, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
         if (errMsg != null) {
             return Result.fail(errMsg.toString());
@@ -94,26 +85,21 @@ public class AddressBookController {
         return Result.succeed(null);
     }
 
-    /**
-     * 根据id删除地址
-     *
-     * @param id
-     * @return
-     */
+
+    @ApiOperation("根据id删除地址")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
+    })
     @DeleteMapping("/{id}")
     public Result<Object> deleteAddress(@PathVariable("id") Long id) {
         addressBookService.removeById(id, false);
         return Result.succeed(null);
     }
 
-    /**
-     * 获取下单地址
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("获取下单地址")
     @GetMapping("/order")
-    public Result<AddressBook> getOrderAddress(HttpSession session) {
+    public Result<AddressBook> getOrderAddress() {
         User user = (User) session.getAttribute("user");
         AddressBook address = addressBookService.getOrderAddress(user.getId());
 

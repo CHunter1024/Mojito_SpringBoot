@@ -2,6 +2,8 @@ package com.freedom.mojito.controller.front;
 
 import com.freedom.mojito.common.Result;
 import com.freedom.mojito.pojo.Category;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import java.util.List;
  * @author Chb
  */
 
+@Api(tags = "分类相关API（客户端）")
 @RestController("front-categoryController")
 @RequestMapping("/front/category")
 public class CategoryController {
@@ -29,12 +32,8 @@ public class CategoryController {
     @Qualifier("backend-categoryController")
     private com.freedom.mojito.controller.backend.CategoryController categoryController;
 
-    /**
-     * 根据条件查询分类信息
-     *
-     * @param category
-     * @return
-     */
+
+    @ApiOperation(value = "根据条件查询分类信息", notes = "条件：分类类型（type）")
     @GetMapping("/list")
     public Result<List<Category>> getCategoryList(Category category) {
         return categoryController.getCategoryList(category);

@@ -7,6 +7,10 @@ import com.freedom.mojito.service.UserService;
 import com.freedom.mojito.util.EmailUtils;
 import com.freedom.mojito.util.RandomUtils;
 import com.freedom.mojito.util.ValidateData;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -30,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @author Chb
  */
 
+@Api(tags = "用户相关API（管理端）")
 @Slf4j
 @RestController
 @RequestMapping("/front/user")
@@ -41,13 +46,14 @@ public class UserController {
     private EmailUtils emailUtils;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private HttpSession session;
 
-    /**
-     * 根据邮箱地址生成验证码并发送出去
-     *
-     * @param email
-     * @return
-     */
+
+    @ApiOperation("根据邮箱地址生成验证码并发送出去")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "email", value = "邮箱地址", required = true, paramType = "path", dataTypeClass = String.class)
+    })
     @GetMapping("/getCode/{email}")
     public Result<Object> sendCode(@PathVariable("email") String email) {
         if (StringUtils.hasText(email)) {
@@ -73,15 +79,10 @@ public class UserController {
         return Result.fail("参数有误");
     }
 
-    /**
-     * 用户登录
-     *
-     * @param map
-     * @param session
-     * @return
-     */
+
+    @ApiOperation(value = "用户登录", notes = "参数（json）：邮箱地址（email）/ 验证码（code)")
     @PostMapping("/login")
-    public Result<Object> login(@RequestBody Map<String, String> map, HttpSession session) {
+    public Result<Object> login(@RequestBody Map<String, String> map) {
         String email = map.get("email");
         String code = map.get("code");
         // 从redis中根据email获取验证码
@@ -103,14 +104,10 @@ public class UserController {
         return Result.succeed(null);
     }
 
-    /**
-     * 获取当前用户信息
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("获取当前用户信息")
     @GetMapping("/getCurrUser")
-    public Result<User> getCurrUser(HttpSession session) {
+    public Result<User> getCurrUser() {
         User currUser = (User) session.getAttribute("user");
         if (currUser != null) {
             User user = userService.getById(currUser.getId());
@@ -120,29 +117,18 @@ public class UserController {
         return Result.fail("未登录");
     }
 
-    /**
-     * 用户登出
-     *
-     * @param session
-     * @return
-     */
+
+    @ApiOperation("用户登出")
     @PostMapping("/logout")
-    public Result<Object> logout(HttpSession session) {
+    public Result<Object> logout() {
         session.removeAttribute("user");
         return Result.succeed(null);
     }
 
-    /**
-     * 修改用户信息
-     *
-     * @param user
-     * @param validResults
-     * @param session
-     * @return
-     * @throws IOException
-     */
+
+    @ApiOperation("修改用户信息")
     @PutMapping
-    public Result<Object> updateUser(@RequestBody @Validated User user, BindingResult validResults, HttpSession session) throws IOException {
+    public Result<Object> updateUser(@RequestBody @Validated User user, BindingResult validResults) throws IOException {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
         if (errMsg != null) {
             return Result.fail(errMsg.toString());
@@ -154,15 +140,10 @@ public class UserController {
         return Result.succeed(null);
     }
 
-    /**
-     * 修改当前用户的Email
-     *
-     * @param map
-     * @param session
-     * @return
-     */
+
+    @ApiOperation(value = "修改当前用户的Email", notes = "参数（json）：邮箱地址（email）/ 验证码（code)")
     @PutMapping("/email")
-    public Result<String> updateUserEmail(@RequestBody Map<String, String> map, HttpSession session) {
+    public Result<String> updateUserEmail(@RequestBody Map<String, String> map) {
         String email = map.get("email");
         String code = map.get("code");
         // 从redis中根据email获取验证码

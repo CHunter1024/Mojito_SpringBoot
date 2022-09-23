@@ -2,6 +2,8 @@ package com.freedom.mojito.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -14,54 +16,37 @@ import java.math.BigDecimal;
  * @author Chb
  */
 
-@TableName(value ="order_detail")
+@ApiModel("订单明细")
+@TableName(value = "order_detail")
 @Data
 public class OrderDetail {
 
-    /**
-     * 主键
-     */
+    @ApiModelProperty("主键")
     @TableId
     private Long id;
 
-    /**
-     * 订单id
-     */
+    @ApiModelProperty("订单id")
     private Long orderId;
 
-    /**
-     * 商品id
-     */
+    @ApiModelProperty("商品id")
     private Long goodsId;
 
-    /**
-     * 类型 0:商品,1:套餐
-     */
+    @ApiModelProperty("类型 0:商品,1:套餐")
     private Integer type;
 
-    /**
-     * 名称(冗余字段)
-     */
+    @ApiModelProperty("名称(冗余字段)")
     private String name;
 
-    /**
-     * 图片(冗余字段)
-     */
+    @ApiModelProperty("图片(冗余字段)")
     private String image;
 
-    /**
-     * 规格
-     */
+    @ApiModelProperty("规格")
     private String config;
 
-    /**
-     * 数量
-     */
+    @ApiModelProperty("数量")
     private Integer number;
 
-    /**
-     * 金额
-     */
+    @ApiModelProperty("金额")
     private BigDecimal amount;
 
 }

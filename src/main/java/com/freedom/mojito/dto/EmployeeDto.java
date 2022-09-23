@@ -1,6 +1,8 @@
 package com.freedom.mojito.dto;
 
 import com.freedom.mojito.pojo.Employee;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -12,16 +14,13 @@ import lombok.Data;
  */
 
 @Data
+@ApiModel("员工信息DTO")
 public class EmployeeDto extends Employee {
 
-    /**
-     * 登录Id
-     */
+    @ApiModelProperty("登录Id")
     private String loginId;
 
-    /**
-     * 原密码
-     */
+    @ApiModelProperty("原密码")
     private String oldPassword;
 
 }

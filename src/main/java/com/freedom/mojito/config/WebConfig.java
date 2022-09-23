@@ -4,22 +4,26 @@ import com.freedom.mojito.common.JacksonObjectMapper;
 import com.freedom.mojito.interceptor.backend.BackendCheckLoginInterceptor;
 import com.freedom.mojito.interceptor.backend.PermissionInterceptor;
 import com.freedom.mojito.interceptor.front.FrontCheckLoginInterceptor;
-import org.jetbrains.annotations.NotNull;
+import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import io.swagger.config.SwaggerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -32,6 +36,8 @@ import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({BackendCheckLoginInterceptor.class, PermissionInterceptor.class, FrontCheckLoginInterceptor.class})
+@EnableSwagger2
+@EnableKnife4j
 public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
@@ -72,7 +78,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         // 创建消息转换器对象
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
-        // 设置对象转换器，底层使用Jackson将Java对象转为Json
+        // 设置对象映射器，底层使用Jackson将Java对象转为Json
         messageConverter.setObjectMapper(new JacksonObjectMapper());
         // 将上面的消息转换器对象添加到MVC框架的转换器集合中，并放在首位
         converters.add(0, messageConverter);

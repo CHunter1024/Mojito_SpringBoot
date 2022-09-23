@@ -1,6 +1,8 @@
 package com.freedom.mojito.pojo;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,58 +15,41 @@ import java.time.LocalDateTime;
  * @author Chb
  */
 
-@TableName(value ="commodity_config")
+@ApiModel("商品配置")
+@TableName(value = "commodity_config")
 @Data
 public class CommodityConfig {
 
-    /**
-     * 主键
-     */
+    @ApiModelProperty("主键")
     @TableId
     private Long id;
 
-    /**
-     * 商品id
-     */
+    @ApiModelProperty("商品id")
     private Long commodityId;
 
-    /**
-     * 配置名称
-     */
+    @ApiModelProperty("配置名称")
     private String name;
 
-    /**
-     * 配置内容
-     */
+    @ApiModelProperty("配置内容")
     private String value;
 
-    /**
-     * 创建时间
-     */
+    @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    /**
-     * 更新时间
-     */
+    @ApiModelProperty("更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    /**
-     * 创建人
-     */
+    @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
-    /**
-     * 修改人
-     */
+    @ApiModelProperty("修改人")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
-    /**
-     * 逻辑删除
-     */
+    @ApiModelProperty(value = "逻辑删除", hidden = true)
     @TableLogic
     private Integer isDeleted;
 

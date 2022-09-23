@@ -1,6 +1,8 @@
 package com.freedom.mojito.pojo;
 
 import com.baomidou.mybatisplus.annotation.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
@@ -17,82 +19,57 @@ import java.time.LocalDateTime;
  * @author Chb
  */
 
+@ApiModel("套餐信息")
 @TableName(value = "combo")
 @Data
 public class Combo {
 
-    /**
-     * 主键
-     */
+    @ApiModelProperty("主键")
     @TableId
     private Long id;
 
-    /**
-     * 套餐名称
-     */
+    @ApiModelProperty("套餐名称")
     private String name;
 
-    /**
-     * 套餐分类id
-     */
+    @ApiModelProperty("套餐分类id")
     private Long categoryId;
 
-    /**
-     * 套餐价格
-     */
+    @ApiModelProperty("套餐价格")
     @Digits(integer = 8, fraction = 2, message = "{combo.price.reg}")
     @PositiveOrZero(message = "{combo.price.reg}")
     private BigDecimal price;
 
-    /**
-     * 图片
-     */
+    @ApiModelProperty("图片")
     private String image;
 
-    /**
-     * 描述信息
-     */
+    @ApiModelProperty("描述信息")
     private String description;
 
-    /**
-     * 状态 0:停售,1:起售
-     */
+    @ApiModelProperty("状态 0:停售,1:起售")
     @Digits(integer = 1, fraction = 0, message = "{combo.status.reg}")
     @Range(min = 0, max = 1, message = "{combo.status.reg}")
     private Integer status;
 
-    /**
-     * 销量
-     */
+    @ApiModelProperty("销量")
     private Integer sales;
 
-    /**
-     * 创建时间
-     */
+    @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
-    /**
-     * 更新时间
-     */
+    @ApiModelProperty("更新时间")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    /**
-     * 创建人
-     */
+    @ApiModelProperty("创建人")
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
-    /**
-     * 修改人
-     */
+    @ApiModelProperty("修改人")
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
-    /**
-     * 逻辑删除
-     */
+    @ApiModelProperty(value = "逻辑删除", hidden = true)
     @TableLogic
     private Integer isDeleted;
 

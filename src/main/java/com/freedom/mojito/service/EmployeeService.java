@@ -36,10 +36,10 @@ public interface EmployeeService extends IService<Employee> {
      *
      * @param page     页码
      * @param pageSize 数量
-     * @param username 用户名作关键字
+     * @param employee 条件参数
      * @return 分页信息
      */
-    Page<Employee> getPageInfo(Integer page, Integer pageSize, String username);
+    Page<Employee> getPageInfo(Integer page, Integer pageSize, Employee employee);
 
     /**
      * 保存员工信息

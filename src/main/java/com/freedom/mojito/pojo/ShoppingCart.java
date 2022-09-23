@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
 
@@ -20,62 +22,43 @@ import java.time.LocalDateTime;
  * @author Chb
  */
 
-@TableName(value ="shopping_cart")
+@ApiModel("购物车")
+@TableName(value = "shopping_cart")
 @Data
 public class ShoppingCart {
 
-    /**
-     * 主键
-     */
+    @ApiModelProperty("主键")
     @TableId
     private Long id;
 
-    /**
-     * 用户id
-     */
+    @ApiModelProperty("用户id")
     private Long userId;
 
-    /**
-     * 商品id
-     */
+    @ApiModelProperty("商品id")
     private Long goodsId;
 
-    /**
-     * 类型 0:商品,1:套餐
-     */
+    @ApiModelProperty("类型 0:商品,1:套餐")
     @Digits(integer = 1, fraction = 0, message = "{shoppingCart.type.reg}")
     @Range(min = 0, max = 1, message = "{shoppingCart.type.reg}")
     private Integer type;
 
-    /**
-     * 名称(冗余字段)
-     */
+    @ApiModelProperty("名称(冗余字段)")
     private String name;
 
-    /**
-     * 图片(冗余字段)
-     */
+    @ApiModelProperty("图片(冗余字段)")
     private String image;
 
-    /**
-     * 规格
-     */
+    @ApiModelProperty("规格")
     private String config;
 
-    /**
-     * 数量
-     */
+    @ApiModelProperty("数量")
     @PositiveOrZero(message = "{shoppingCart.number.reg}")
     private Integer number;
 
-    /**
-     * 金额
-     */
+    @ApiModelProperty("金额")
     private BigDecimal amount;
 
-    /**
-     * 创建时间
-     */
+    @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
