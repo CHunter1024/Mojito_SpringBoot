@@ -86,6 +86,7 @@
   <!-- 引入axios -->
   <script src="../plugins/axios/axios.min.js"></script>
   <script src="../js/request.js"></script>
+  <script src="../js/common.js"></script>
   <script src="../api/login.js"></script>
   <script src="../api/user.js"></script>
   <script>
@@ -227,7 +228,7 @@
         },
         // 获取头像图片文件的URL
         getAvatar(avatar) {
-          return avatar ? `/common/download?fileName=${avatar}&subDir=avatar` : '../images/avatar.png'
+          return getFileUrl(avatar, 'avatar', '../images/avatar.png')
         },
 
         // 返回上一个页面

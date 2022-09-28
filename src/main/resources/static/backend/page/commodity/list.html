@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../../styles/page.css"/>
 </head>
 <body>
-   <div class="dashboard-container" id="commodity-app">
+  <div class="dashboard-container" id="commodity-app">
     <div class="container">
       <div class="tableBar">
         <el-input v-model.trim="input" placeholder="输入商品名称关键字搜索" style="width: 250px"
@@ -84,6 +84,7 @@
   <!-- 引入axios -->
   <script src="../../plugins/axios/axios.min.js"></script>
   <script src="../../js/request.js"></script>
+  <script src="../../js/common.js"></script>
   <script src="../../api/commodity.js"></script>
   <script>
     new Vue({
@@ -152,7 +153,7 @@
         },
         // 获取图片文件
         getImage(image) {
-          return image ? `/common/download?fileName=${image}` : ''
+          return getFileUrl(image, null, '')
         },
         // 批量选择处理
         handleSelectionChange(values) {

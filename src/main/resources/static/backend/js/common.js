@@ -1,4 +1,4 @@
-//获取url地址上面的参数
+// 获取url地址上面的参数
 function getUrlParam(argName) {
     let url = location.href
     let arrStr = url.substring(url.indexOf('?') + 1).split("&")
@@ -19,3 +19,9 @@ const getConfigListHand = () => [
     {name: '底料', value: ['原味', '双炫']},
     {name: '冰淇淋口味', value: ['草莓味+原味']},
 ]
+
+// 获取文件 Url
+const getFileUrl = (fileName, subDir, defaultUrl) => {
+    let url = `/common/download?fileName=${fileName}`
+    return fileName ? (subDir ? `${url}&subDir=${subDir}` : url) : defaultUrl
+}

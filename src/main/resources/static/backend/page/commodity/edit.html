@@ -76,7 +76,7 @@
         <el-form-item label="商品图片" prop="image">
           <el-upload
                   class="avatar-uploader"
-                  action="/backend/common/upload"
+                  action="/common/upload"
                   accept="image/*"
                   :show-file-list="false"
                   :before-upload="beforeUpload"
@@ -167,7 +167,7 @@
                 value: config.value.substring(1, config.value.length - 1).split(','),
                 showOption: false
               }))
-              this.imageUrl = res.data.image ? `/common/download?fileName=${res.data.image}` : ''
+              this.imageUrl = getFileUrl(res.data.image, null, '')
             } else {
               this.$message.error(res.msg)
             }

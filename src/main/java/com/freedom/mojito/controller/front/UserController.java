@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @author Chb
  */
 
-@Api(tags = "用户相关API（管理端）")
+@Api(tags = "用户相关API")
 @Slf4j
 @RestController
 @RequestMapping("/front/user")
