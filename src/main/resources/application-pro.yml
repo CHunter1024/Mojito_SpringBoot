@@ -102,8 +102,8 @@ interceptor:
 
 # 文件上传存放目录的路径
 file:
-  temp-path: /opt/app/Mojito_SpringBoot/file/temp/
-  path: /opt/app/Mojito_SpringBoot/file/
+  temp-path: /opt/app/Mojito/OSS/temp/
+  path: /opt/app/Mojito/OSS/
 
 # 邮件配置
 message:
