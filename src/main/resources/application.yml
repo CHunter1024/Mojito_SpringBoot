@@ -103,7 +103,7 @@ interceptor:
 # 文件上传存放目录的路径
 file:
   temp-path: C:\Users\Freedom\Desktop\Java_code\file storage\Mojito_SpringBoot\temp\
-  path: C:\Users\Freedom\Desktop\Java_code\file storage\Mojito_SpringBoot
+  path: C:\Users\Freedom\Desktop\Java_code\file storage\Mojito_SpringBoot\
 
 # 邮件配置
 message:
