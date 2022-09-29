@@ -45,14 +45,9 @@ public class BackendCheckLoginInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        log.warn("用户未登录，重定向到登录页面");
-        // 重定向到登录页面
-        if (request.getRequestURI().endsWith(".html")) {
-            response.sendRedirect("/backend/page/login/login.html");
-        } else {
-            response.setHeader("Content-Type", "application/json;charset=UTF-8");
-            response.getWriter().write(new ObjectMapper().writeValueAsString(Result.fail("not logged in")));
-        }
+        log.warn("用户未登录");
+        response.setHeader("Content-Type", "application/json;charset=UTF-8");
+        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.fail("not logged in")));
 
         return false;
     }
