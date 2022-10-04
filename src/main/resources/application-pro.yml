@@ -50,7 +50,7 @@ spring:
     host: smtp.qq.com                        # SMTP服务器地址
     port: 587                                # 端口号(465/587)
     username: mojito_chunter1024@qq.com      # 邮箱地址
-    password: mcohxjfuzdjmfjed               # 授权码
+    password:                                # 授权码
     protocol: smtp                           # 类型，默认smtp
     default-encoding: UTF-8                  # 字符集，默认UTF-8
 
