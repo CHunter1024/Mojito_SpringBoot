@@ -24,9 +24,6 @@
 hs_err_pid*
 
 # IDEA
-.classpath
-.project
-.settings
 target
 .idea
 *.iml
