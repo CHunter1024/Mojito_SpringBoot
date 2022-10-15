@@ -85,12 +85,14 @@ public class UserController {
     public Result<Object> login(@RequestBody Map<String, String> map) {
         String email = map.get("email");
         String code = map.get("code");
-        // 从redis中根据email获取验证码
         String codeKey = email + "_code";
+        String againKey = email + "_again";
+
+        // 从redis中根据email获取验证码
         Object correctCode = redisTemplate.opsForValue().get(codeKey);
 
         if (correctCode == null) {
-            return Result.fail("验证码已过期，请重新获取");
+            return Result.fail("验证码已过期或不存在");
         }
         if (!Objects.equals(code, correctCode)) {
             return Result.fail("验证码错误");
@@ -100,6 +102,9 @@ public class UserController {
             return Result.fail("该用户存在异常操作，已被锁定");
         }
 
+        // 删除redis中的验证码和可再次获取时间，将登陆成功的user存放到session中
+        redisTemplate.delete(codeKey);
+        redisTemplate.delete(againKey);
         session.setAttribute("user", user);
         return Result.succeed(null);
     }
