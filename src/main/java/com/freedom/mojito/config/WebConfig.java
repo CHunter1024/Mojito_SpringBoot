@@ -4,25 +4,13 @@ import com.freedom.mojito.common.JacksonObjectMapper;
 import com.freedom.mojito.interceptor.backend.BackendCheckLoginInterceptor;
 import com.freedom.mojito.interceptor.backend.PermissionInterceptor;
 import com.freedom.mojito.interceptor.front.FrontCheckLoginInterceptor;
-import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
-import io.swagger.config.SwaggerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.List;
 
@@ -36,8 +24,6 @@ import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({BackendCheckLoginInterceptor.class, PermissionInterceptor.class, FrontCheckLoginInterceptor.class})
-@EnableSwagger2
-@EnableKnife4j
 public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
