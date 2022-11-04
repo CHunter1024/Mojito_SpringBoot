@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -70,4 +71,24 @@ public class WebConfig implements WebMvcConfigurer {
         converters.add(0, messageConverter);
     }
 
+    /**
+     * 配置全局跨域请求处理（具体就是修改响应头）
+     *
+     * @param registry
+     */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        // 添加映射路径（/**，处理所有的请求）
+        registry.addMapping("/**")
+                // 指定放行域，（http://127.0.0.1:[*]，ip为127.0.0.1下的任意端口）
+                .allowedOriginPatterns("http://127.0.0.1:[*]")
+                // 是否允许发送Cookie
+                .allowCredentials(true)
+                // 指定允许的请求方式
+                .allowedMethods("*")
+                // 指定允许携带的请求头
+                .allowedHeaders("*")
+                // 指定暴露的请求头
+                .exposedHeaders("*");
+    }
 }

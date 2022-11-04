@@ -6,6 +6,7 @@ import com.freedom.mojito.pojo.Employee;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,11 @@ public class BackendCheckLoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 放行预检请求
+        if (RequestMethod.OPTIONS.name().equals(request.getMethod())) {
+            return true;
+        }
+
         log.info("backend--检查登录拦截器拦截到请求：{}", request.getRequestURI());
 
         // 判断登录状态，如果已登录，则直接放行
