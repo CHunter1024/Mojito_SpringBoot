@@ -2,7 +2,6 @@ package com.freedom.mojito.interceptor.front;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freedom.mojito.common.Result;
-import com.freedom.mojito.pojo.Employee;
 import com.freedom.mojito.pojo.User;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
