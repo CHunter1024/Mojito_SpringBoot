@@ -1,117 +1,21 @@
-server:
-  # 配置端口号
-  port: 8080
-
+# 生产环境的差异配置
 spring:
-  # 配置mvc
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher  # 映射匹配策略（使用knife4j需要设置为ant_path_matcher）
-
   shardingsphere:
-    # 配置多数据源环境
     datasource:
-      names: master,slave
-      # 主数据源
       master:
-        # Sharding-JDBC通过反射创建对应的DataSource，所以druid无需配置DataSource
-        type: com.alibaba.druid.pool.DruidDataSource
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false
-        username: root
-        password: ZpXXRCAMn6WEOS3FpXZNbsxLSOCq8eCnh8WqYK4g9w+xH+ApVole1DOtomXVt9yO6djE5rufMZf2aZ2jt3k17g==
-        # 连接池配置
-        filters: config
-        connection-properties: config.decrypt=true
-      # 从数据源
+        url: jdbc:mysql://localhost:3306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
       slave:
-        type: com.alibaba.druid.pool.DruidDataSource
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:13306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false
-        username: root
-        password: ZpXXRCAMn6WEOS3FpXZNbsxLSOCq8eCnh8WqYK4g9w+xH+ApVole1DOtomXVt9yO6djE5rufMZf2aZ2jt3k17g==
-        # 连接池配置
-        filters: config
-        connection-properties: config.decrypt=true
-    # 主从配置（读写分离）
-    masterslave:
-      load-balance-algorithm-type: round_robin  # 轮询
-      name: dataSource                          # 最终的数据源名称
-      master-data-source-name: master           # 主库数据源名称
-      slave-data-source-names: slave            # 从库数据源名称列表，多个逗号分隔
+        url: jdbc:mysql://localhost:13306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
 
-  servlet:
-    multipart:
-      max-file-size: 10MB     #  最大支持上传文件大小(默认1MB)
-      max-request-size: 10MB  #  最大支持请求文件大小(默认10MB)
-
-  # 配置mail
-  mail:
-    host: smtp.qq.com                        # SMTP服务器地址
-    port: 587                                # 端口号(465/587)
-    username: mojito_chunter1024@qq.com      # 邮箱地址
-    password:                                # 授权码
-    protocol: smtp                           # 类型，默认smtp
-    default-encoding: UTF-8                  # 字符集，默认UTF-8
-
-  # 配置Redis
   redis:
-    host: localhost            # Redis服务器地址
-    port: 6666                 # Redis服务器连接端口
-    password: akakak           # Redis服务器连接密码
-    database: 0                # Redis数据库索引（默认为0）
-  cache:
-    redis:
-      time-to-live: 1800000    # 缓存过期时间
+    host: localhost
 
-# 配置MybatisPlus
-mybatis-plus:
-  configuration:
-    # 配置MybatisPlus日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-  # 全局配置
-  global-config:
-    db-config:
-      # 配置MyBatis-Plus的主键策略
-      id-type: assign_id
-  type-aliases-package: com.freedom.mojito.pojo   # 以包为单位，设置该包下所有的类型都拥有默认的别名，即类名且不区分大小写
-
-# 配置自定义拦截器的拦截路径
-interceptor:
-  backend:
-    # 检查登录拦截器
-    check-login-interceptor:
-      interceptPaths: [ /backend/** ]
-      excludePaths: [ /error,
-                      /backend/employee/login ]
-    # 权限拦截器
-    permission-interceptor:
-      interceptPaths: [ /backend/employee/** ]
-      excludePaths: [ /backend/employee/login,/backend/employee/logout,/backend/employee/edit,/backend/employee/exist ]
-  front:
-    # 检查登录拦截器
-    check-login-interceptor:
-      interceptPaths: [ /front/** ]
-      excludePaths: [ /error,
-                      /front/user/getCode/*,/front/user/login,/front/user/getCurrUser,
-                      /front/category/list,/front/commodity/list,/front/combo/list ]
-
-# 文件上传存放目录的路径
 file:
   temp-path: /opt/app/Mojito/OSS/temp/
   path: /opt/app/Mojito/OSS/
 
-# 邮件配置
 message:
   send: true
-  nickname: Mojito
-  subject: Mojito邮箱验证码
-  template: |-
-    验证码：{}，该验证码5分钟内有效。为了保障您的账户安全，请勿向他人泄漏验证码信息。
-    ------------------------------------------------------------
-    Tip：如果此邮件在垃圾箱中，请随手点一下这不是垃圾邮件哦，要不然可能下次就收不到验证码了。
 
-# 配置knife4j
 knife4j:
   production: true  # 生成环境屏蔽文档资源
