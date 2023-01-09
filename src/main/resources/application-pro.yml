@@ -3,12 +3,12 @@ spring:
   shardingsphere:
     datasource:
       master:
-        url: jdbc:mysql://192.168.232.101:3306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+        url: jdbc:mysql://hostip/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
       slave:
-        url: jdbc:mysql://192.168.232.101:13306/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+        url: jdbc:mysql://hostip/mojito?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
 
   redis:
-    host: 192.168.232.101
+    host: hostip
 
 file:
   temp-path: /opt/app/Mojito/OSS/temp/
