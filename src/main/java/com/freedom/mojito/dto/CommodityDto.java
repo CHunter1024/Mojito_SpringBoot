@@ -5,6 +5,7 @@ import com.freedom.mojito.pojo.CommodityConfig;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import java.util.List;
  */
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ApiModel("商品信息DTO")
 public class CommodityDto extends Commodity {
 
