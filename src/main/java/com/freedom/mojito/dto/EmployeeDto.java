@@ -4,6 +4,7 @@ import com.freedom.mojito.pojo.Employee;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Description: Employee的数据传输对象
@@ -14,6 +15,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @ApiModel("员工信息DTO")
 public class EmployeeDto extends Employee {
 
