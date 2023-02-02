@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
  */
 
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true)  // 调用父类的equals和hashCode实现作为生成的equals和hashCode算法的一部分
 @ApiModel("员工信息DTO")
 public class EmployeeDto extends Employee {
 
