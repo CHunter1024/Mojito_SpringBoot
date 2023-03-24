@@ -83,18 +83,19 @@ interceptor:
     # 检查登录拦截器
     check-login-interceptor:
       interceptPaths: [ /backend/** ]
-      excludePaths: [ /error,
+      excludePaths: [ /backend/common/**,
                       /backend/employee/login ]
     # 权限拦截器
     permission-interceptor:
       interceptPaths: [ /backend/employee/** ]
-      excludePaths: [ /backend/employee/login,/backend/employee/logout,/backend/employee/edit,/backend/employee/exist ]
+      excludePaths: [ /backend/employee/login,/backend/employee/logout,
+                      /backend/employee/getCurrEmp,/backend/employee/putCurrEmp,/backend/employee/exist ]
   front:
     # 检查登录拦截器
     check-login-interceptor:
       interceptPaths: [ /front/** ]
-      excludePaths: [ /error,
-                      /front/user/getCode/*,/front/user/login,/front/user/getCurrUser,
+      excludePaths: [ /front/common/**,
+                      /front/user/login,/front/user/isLogin,
                       /front/category/list,/front/commodity/list,/front/combo/list ]
 
 # 文件上传存放目录的路径

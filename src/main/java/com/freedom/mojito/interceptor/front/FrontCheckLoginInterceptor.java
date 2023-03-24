@@ -6,6 +6,7 @@ import com.freedom.mojito.pojo.User;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,11 @@ public class FrontCheckLoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 放行预检请求
+        if (RequestMethod.OPTIONS.name().equals(request.getMethod())) {
+            return true;
+        }
+
         log.info("front--检查登录拦截器拦截到请求：{}", request.getRequestURI());
 
         // 判断登录状态，如果已登录，则直接放行
@@ -47,8 +53,7 @@ public class FrontCheckLoginInterceptor implements HandlerInterceptor {
 
         log.warn("用户未登录");
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.fail("not logged in")));
-
+        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.notLogin("未登录")));
         return false;
     }
 }

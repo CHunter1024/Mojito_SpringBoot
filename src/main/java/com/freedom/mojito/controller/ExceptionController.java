@@ -29,8 +29,7 @@ public class ExceptionController {
      */
     @ExceptionHandler(Exception.class)
     private Result<Object> handleException(Exception exception) {
-        log.error("服务出错了，错误类型：{}", exception.getClass().toString());
-        exception.printStackTrace();
+        basicHandleException(exception);
         return Result.fail("未知错误");
     }
 
@@ -42,8 +41,7 @@ public class ExceptionController {
      */
     @ExceptionHandler(DuplicateKeyException.class)
     private Result<Object> handleDuplicateKeyException(Exception exception) {
-        log.error("服务出错了，错误类型：{}", exception.getClass().toString());
-        exception.printStackTrace();
+        basicHandleException(exception);
         String errMsg = exception.getMessage();
         if (errMsg.contains("employee.account_unique")) {
             return Result.fail("帐号已存在");
@@ -65,8 +63,17 @@ public class ExceptionController {
      */
     @ExceptionHandler(MailSendException.class)
     private Result<Object> handleMailSendException(Exception exception) {
+        basicHandleException(exception);
+        return Result.fail("验证码发送失败");
+    }
+
+    /**
+     * 基础处理异常
+     *
+     * @param exception
+     */
+    private void basicHandleException(Exception exception) {
         log.error("服务出错了，错误类型：{}", exception.getClass().toString());
         exception.printStackTrace();
-        return Result.fail("验证码发送失败");
     }
 }

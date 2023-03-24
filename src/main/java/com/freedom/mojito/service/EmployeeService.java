@@ -24,7 +24,7 @@ public interface EmployeeService extends IService<Employee> {
     Long countByFieldValue(String field, String value);
 
     /**
-     * 根据帐号或者手机号码获取获取员工
+     * 根据帐号或者手机号码获取员工信息
      *
      * @param accountOrPhoneNumber 帐号或者手机号码
      * @return 员工
