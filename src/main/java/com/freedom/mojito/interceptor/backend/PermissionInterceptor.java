@@ -53,7 +53,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
 
         log.warn("该用户不是管理员，已拦截");
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.fail("没有权限访问！")));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.forbid("没有权限访问！")));
         return false;
     }
 }

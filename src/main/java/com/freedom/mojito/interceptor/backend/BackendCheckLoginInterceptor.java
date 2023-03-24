@@ -53,8 +53,7 @@ public class BackendCheckLoginInterceptor implements HandlerInterceptor {
 
         log.warn("用户未登录");
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
-        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.fail("not logged in")));
-
+        response.getWriter().write(new ObjectMapper().writeValueAsString(Result.notLogin("未登录")));
         return false;
     }
 }

@@ -52,7 +52,7 @@ public class AddressBookController {
     }
 
 
-    @ApiOperation("获取当前用户下的所有地址")
+    @ApiOperation("查询当前用户的所有地址信息")
     @GetMapping
     public Result<List<AddressBook>> getAddresses() {
         User currUser = (User) session.getAttribute("user");
@@ -61,7 +61,7 @@ public class AddressBookController {
     }
 
 
-    @ApiOperation("根据id获取地址")
+    @ApiOperation("根据id获取地址信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
     })
@@ -72,7 +72,7 @@ public class AddressBookController {
     }
 
 
-    @ApiOperation("修改当前用户地址")
+    @ApiOperation("修改当前用户地址信息")
     @PutMapping
     public Result<Object> updateAddress(@RequestBody @Validated AddressBook address, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
@@ -97,7 +97,7 @@ public class AddressBookController {
     }
 
 
-    @ApiOperation("获取下单地址")
+    @ApiOperation("查询下单地址信息")
     @GetMapping("/order")
     public Result<AddressBook> getOrderAddress() {
         User user = (User) session.getAttribute("user");

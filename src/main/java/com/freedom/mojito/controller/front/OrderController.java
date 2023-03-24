@@ -17,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -53,7 +52,7 @@ public class OrderController {
     }
 
 
-    @ApiOperation("分页获取当前用户的订单")
+    @ApiOperation("分页查询当前用户的订单信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "page", value = "页码", required = true, paramType = "query", dataTypeClass = Integer.class),
             @ApiImplicitParam(name = "pageSize", value = "页尺寸", required = true, paramType = "query", dataTypeClass = Integer.class)
@@ -76,7 +75,7 @@ public class OrderController {
     }
 
 
-    @ApiOperation("根据id获取订单")
+    @ApiOperation("根据id查询订单信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
     })

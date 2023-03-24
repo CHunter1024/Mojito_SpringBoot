@@ -36,7 +36,7 @@ public class ShoppingCartController {
 
     @ApiOperation("将商品添加到购物车中")
     @PostMapping
-    public Result<Object> addCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults) {
+    public Result<Object> addShoppingCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
         if (errMsg != null) {
             return Result.fail(errMsg.toString());
@@ -48,18 +48,18 @@ public class ShoppingCartController {
     }
 
 
-    @ApiOperation("获取购物车中的商品信息")
+    @ApiOperation("查询购物车中的商品信息")
     @GetMapping
-    public Result<List<ShoppingCart>> getCart() {
+    public Result<List<ShoppingCart>> getShoppingCart() {
         User user = (User) session.getAttribute("user");
         List<ShoppingCart> carts = shoppingCartService.getByUserId(user.getId());
         return Result.succeed(carts);
     }
 
 
-    @ApiOperation("删除购物车中的商品")
-    @DeleteMapping
-    public Result<Object> clearCart() {
+    @ApiOperation("清空购物车中的商品")
+    @DeleteMapping("/all")
+    public Result<Object> clearShoppingCart() {
         User user = (User) session.getAttribute("user");
         shoppingCartService.removeByUserId(user.getId());
         return Result.succeed(null);
@@ -68,7 +68,7 @@ public class ShoppingCartController {
 
     @ApiOperation("修改购物车中指定商品的数量")
     @PutMapping
-    public Result<Object> updateCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults) {
+    public Result<Object> updateShoppingCart(@RequestBody @Validated ShoppingCart shoppingCart, BindingResult validResults) {
         List<String> errMsg = ValidateData.getErrMsg(validResults);
         if (errMsg != null) {
             return Result.fail(errMsg.toString());

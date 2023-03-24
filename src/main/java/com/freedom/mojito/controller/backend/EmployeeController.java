@@ -38,7 +38,7 @@ public class EmployeeController {
 
     @ApiOperation(value = "员工登录", notes = "必要参数：loginId（帐号/手机号码），password（密码）")
     @PostMapping("/login")
-    public Result<Employee> login(@RequestBody EmployeeDto employeeDto) {
+    public Result<Object> login(@RequestBody EmployeeDto employeeDto) {
         // 1、根据页面提交的帐号或手机号码查询数据库，如果没有查询到返回用户不存在结果
         Employee employee = employeeService.getByAccountOrPhoneNumber(employeeDto.getLoginId());
         if (employee == null) {
@@ -55,9 +55,9 @@ public class EmployeeController {
             return Result.fail("该帐号已禁用");
         }
 
-        // 4、登录成功，将员工信息存入session并返回登录成功结果
+        // 4、登录成功，将员工信息存入session中
         session.setAttribute("employee", employee);
-        return Result.succeed(employee);
+        return Result.succeed(null);
     }
 
 
@@ -69,23 +69,15 @@ public class EmployeeController {
         return Result.succeed(null);
     }
 
-
-    @ApiOperation("查询唯一的属性值是否存在")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "field", value = "属性名称", required = true, paramType = "query", dataTypeClass = String.class),
-            @ApiImplicitParam(name = "value", value = "属性值", required = true, paramType = "query", dataTypeClass = String.class)
-    })
-    @GetMapping("/exist")
-    public Result<Boolean> onlyExist(String field, String value) {
-        if ("account".equals(field) || "phone_number".equals(field)) {
-            return employeeService.countByFieldValue(field, value) == 0 ? Result.succeed(false) : Result.succeed(true);
-        }
-        return Result.fail("非法参数");
+    @ApiOperation("查询当前员工信息")
+    @GetMapping("/getCurrEmp")
+    public Result<Employee> getCurrentEmployee() {
+        Employee employee = (Employee) session.getAttribute("employee");
+        return Result.succeed(employee);
     }
 
-
     @ApiOperation("修改当前员工信息")
-    @PutMapping("/edit")
+    @PutMapping("/putCurrEmp")
     public Result<Object> updateCurrentEmployee(@RequestBody @Validated EmployeeDto employeeDto, BindingResult validResults) {
         Employee currEmp = (Employee) session.getAttribute("employee");
         // 判断是否修改密码
@@ -105,6 +97,18 @@ public class EmployeeController {
         return Result.succeed(null);
     }
 
+    @ApiOperation("查询唯一的属性值是否存在")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "field", value = "属性名称（account/phone_number）", required = true, paramType = "query", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "value", value = "属性值", required = true, paramType = "query", dataTypeClass = String.class)
+    })
+    @GetMapping("/exist")
+    public Result<Boolean> onlyExist(String field, String value) {
+        if ("account".equals(field) || "phone_number".equals(field)) {
+            return employeeService.countByFieldValue(field, value) == 0 ? Result.succeed(false) : Result.succeed(true);
+        }
+        return Result.fail("非法参数");
+    }
 
     @ApiOperation("添加员工")
     @PostMapping

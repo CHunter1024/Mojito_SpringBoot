@@ -40,21 +40,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user = new User();
             user.setEmail(email);
             user.setName(RandomUtils.getStr(12));  // 随机生成用户名
-            user.setStatus(1);
             save(user);
+            user = getById(user.getId());
         }
         return user;
-    }
-
-    @Override
-    public String encryptEmail(String email) {
-        StringBuilder emailSB = new StringBuilder(email);
-        int start = 3;  // 即保留前几位
-        int end = emailSB.indexOf("@");
-        for (int i = 0; i < end - start; i++) {
-            emailSB.replace(start + i, start + (i + 1), "*");
-        }
-        return emailSB.toString();
     }
 
     @Override
@@ -70,15 +59,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return getById(user.getId());
     }
 
-    @Override
-    public String updateEmailById(String email, Long id) {
-        User user = new User();
-        user.setId(id);
-        user.setEmail(email);
-        updateById(user);
-
-        return encryptEmail(email);
-    }
 }
 
 
