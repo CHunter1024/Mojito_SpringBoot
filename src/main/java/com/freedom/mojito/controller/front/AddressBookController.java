@@ -61,7 +61,7 @@ public class AddressBookController {
     }
 
 
-    @ApiOperation("根据id获取地址信息")
+    @ApiOperation("根据id查询地址信息")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "id", value = "主键id", required = true, paramType = "path", dataTypeClass = Long.class)
     })
