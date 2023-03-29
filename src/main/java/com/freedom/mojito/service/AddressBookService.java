@@ -44,4 +44,11 @@ public interface AddressBookService extends IService<AddressBook> {
      * @return
      */
     AddressBook getOrderAddress(Long userId);
+
+    /**
+     * 根据id删除地址
+     *
+     * @param id
+     */
+    void removeAddressById(Long id);
 }

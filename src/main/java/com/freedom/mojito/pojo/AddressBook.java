@@ -79,8 +79,7 @@ public class AddressBook {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    @ApiModelProperty(value = "逻辑删除", hidden = true)
-    @TableLogic
-    private Integer isDeleted;
+    @ApiModelProperty(value = "用户删除 0:未删除,1:已删除", hidden = true)
+    private Integer userIsDeleted;
 
 }

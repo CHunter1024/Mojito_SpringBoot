@@ -8,6 +8,7 @@ import com.freedom.mojito.pojo.Order;
 import com.freedom.mojito.service.AddressBookService;
 import com.freedom.mojito.mapper.AddressBookMapper;
 import com.freedom.mojito.service.OrderService;
+import net.sf.jsqlparser.statement.select.Wait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -42,7 +43,7 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
     @Transactional(readOnly = true)
     public List<AddressBook> getAddressesByUserId(Long userId) {
         LambdaQueryWrapper<AddressBook> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AddressBook::getUserId, userId)
+        wrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getUserIsDeleted, 0)
                 .orderByDesc(AddressBook::getIsDefault).orderByDesc(AddressBook::getUpdateTime);
         return list(wrapper);
     }
@@ -64,13 +65,23 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
         if (order == null) {
             // 如果没有订单，则查询默认地址
             LambdaQueryWrapper<AddressBook> addressBookWrapper = new LambdaQueryWrapper<>();
-            addressBookWrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getIsDefault, 1).last("LIMIT 1");
+            addressBookWrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getIsDefault, 1)
+                    .eq(AddressBook::getUserIsDeleted, 0).last("LIMIT 1");
             address = getOne(addressBookWrapper);  // 默认地址可有可无
         } else {
             // 如果有订单，则根据订单的地址id查询地址
-            address = getById(order.getAddressBookId());  // 该地址可能被删除
+            LambdaQueryWrapper<AddressBook> addressBookWrapper = new LambdaQueryWrapper<>();
+            addressBookWrapper.eq(AddressBook::getId, order.getAddressBookId()).eq(AddressBook::getUserIsDeleted, 0);
+            address = getOne(addressBookWrapper);  // 该地址可能被删除
         }
         return address;
+    }
+
+    @Override
+    public void removeAddressById(Long id) {
+        LambdaUpdateWrapper<AddressBook> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(AddressBook::getId, id).set(AddressBook::getUserIsDeleted, 1);
+        update(wrapper);
     }
 
     /**
@@ -83,7 +94,7 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
         if (address.getIsDefault() == 1) {
             LambdaUpdateWrapper<AddressBook> wrapper = new LambdaUpdateWrapper<>();
             wrapper.set(AddressBook::getIsDefault, 0)
-                    .eq(AddressBook::getUserId, address.getUserId()).eq(AddressBook::getIsDefault, 1)
+                    .eq(AddressBook::getUserId, address.getUserId()).eq(AddressBook::getIsDefault, 1).eq(AddressBook::getUserIsDeleted, 0)
                     .notIn(AddressBook::getId, address.getId());
             update(wrapper);
         }

@@ -71,7 +71,7 @@ public class Order {
     @ApiModelProperty("取消时间")
     private LocalDateTime cancelTime;
 
-    @ApiModelProperty("用户删除 0:未删除,1:已删除")
+    @ApiModelProperty(value = "用户删除 0:未删除,1:已删除", hidden = true)
     private Integer userIsDeleted;
 
 }
