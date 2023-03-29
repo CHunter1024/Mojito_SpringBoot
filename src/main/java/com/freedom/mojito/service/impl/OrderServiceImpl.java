@@ -67,7 +67,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         // 查询下单地址是否存在
         LambdaQueryWrapper<AddressBook> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AddressBook::getId, order.getAddressBookId()).eq(AddressBook::getUserIsDeleted, 0);
+        wrapper.eq(AddressBook::getId, order.getAddressBookId()).eq(AddressBook::getUserIsDeleted, false);
         AddressBook address = addressBookService.getOne(wrapper);
         if (address == null) {
             return null;
@@ -117,7 +117,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     public Page<OrderDto> getPageInfoByUserId(Integer page, Integer pageSize, Long userId) {
         Page<Order> orderPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Order::getUserId, userId).orderByDesc(Order::getOrderTime).eq(Order::getUserIsDeleted, 0);
+        wrapper.eq(Order::getUserId, userId).orderByDesc(Order::getOrderTime).eq(Order::getUserIsDeleted, false);
         page(orderPage, wrapper);
 
         // 获取OrderDto的分页数据（包含订单明细）
@@ -168,7 +168,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         // 仅当订单已完成或已取消才能删除
         LambdaUpdateWrapper<Order> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(Order::getId, id).set(Order::getUserIsDeleted, 1);
+        wrapper.eq(Order::getId, id).set(Order::getUserIsDeleted, true);
         update(wrapper);
         return true;
     }

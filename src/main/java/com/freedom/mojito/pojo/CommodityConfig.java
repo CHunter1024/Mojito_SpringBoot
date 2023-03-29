@@ -51,6 +51,6 @@ public class CommodityConfig {
 
     @ApiModelProperty(value = "逻辑删除", hidden = true)
     @TableLogic
-    private Integer isDeleted;
+    private Boolean isDeleted;
 
 }
