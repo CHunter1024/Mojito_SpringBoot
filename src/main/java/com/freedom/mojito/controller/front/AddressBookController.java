@@ -92,7 +92,7 @@ public class AddressBookController {
     })
     @DeleteMapping("/{id}")
     public Result<Object> deleteAddress(@PathVariable("id") Long id) {
-        addressBookService.removeById(id, false);
+        addressBookService.removeAddressById(id);
         return Result.succeed(null);
     }
 

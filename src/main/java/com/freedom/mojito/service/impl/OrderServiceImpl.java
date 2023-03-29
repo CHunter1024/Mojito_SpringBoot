@@ -66,7 +66,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             return null;
         }
         // 查询下单地址是否存在
-        AddressBook address = addressBookService.getById(order.getAddressBookId());
+        LambdaQueryWrapper<AddressBook> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AddressBook::getId, order.getAddressBookId()).eq(AddressBook::getUserIsDeleted, 0);
+        AddressBook address = addressBookService.getOne(wrapper);
         if (address == null) {
             return null;
         }
@@ -244,6 +246,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Transactional(readOnly = true)
     public OrderDto buildDetailsAddressDto(Order order) {
         OrderDto orderDto = buildDetailsDto(order);
+        // 用户已删除的地址也要查出来
         AddressBook address = addressBookService.getById(orderDto.getAddressBookId());
         orderDto.setAddress(address);
         return orderDto;
