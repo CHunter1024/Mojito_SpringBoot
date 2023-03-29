@@ -66,10 +66,8 @@ public class AddressBook {
     @ApiModelProperty("标签")
     private String tag;
 
-    @ApiModelProperty("默认 0:否,1:是")
-    @Digits(integer = 1, fraction = 0, message = "{addressBook.isDefault.reg}")
-    @Range(min = 0, max = 1, message = "{addressBook.isDefault.reg}")
-    private Integer isDefault;
+    @ApiModelProperty("默认")
+    private Boolean isDefault;
 
     @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)
@@ -79,7 +77,7 @@ public class AddressBook {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    @ApiModelProperty(value = "用户删除 0:未删除,1:已删除", hidden = true)
-    private Integer userIsDeleted;
+    @ApiModelProperty(value = "用户删除", hidden = true)
+    private Boolean userIsDeleted;
 
 }

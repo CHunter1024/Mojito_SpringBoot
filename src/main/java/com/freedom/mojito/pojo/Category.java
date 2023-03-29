@@ -62,6 +62,6 @@ public class Category {
      */
     @ApiModelProperty(value = "逻辑删除", hidden = true)
     @TableLogic(delval = "id")
-    private Integer isDeleted;
+    private Boolean isDeleted;
 
 }

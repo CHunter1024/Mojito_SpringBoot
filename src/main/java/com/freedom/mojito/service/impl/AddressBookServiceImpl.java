@@ -43,7 +43,7 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
     @Transactional(readOnly = true)
     public List<AddressBook> getAddressesByUserId(Long userId) {
         LambdaQueryWrapper<AddressBook> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getUserIsDeleted, 0)
+        wrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getUserIsDeleted, false)
                 .orderByDesc(AddressBook::getIsDefault).orderByDesc(AddressBook::getUpdateTime);
         return list(wrapper);
     }
@@ -57,22 +57,23 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
     @Override
     @Transactional(readOnly = true)
     public AddressBook getOrderAddress(Long userId) {
-        AddressBook address;
-        // 获取用户最新订单的下单地址
+        AddressBook address = null;
+        // 查询用户的最新订单
         LambdaQueryWrapper<Order> orderWrapper = new LambdaQueryWrapper<>();
         orderWrapper.eq(Order::getUserId, userId).orderByDesc(Order::getOrderTime).last("LIMIT 1");
         Order order = orderService.getOne(orderWrapper);
-        if (order == null) {
-            // 如果没有订单，则查询默认地址
-            LambdaQueryWrapper<AddressBook> addressBookWrapper = new LambdaQueryWrapper<>();
-            addressBookWrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getIsDefault, 1)
-                    .eq(AddressBook::getUserIsDeleted, 0).last("LIMIT 1");
-            address = getOne(addressBookWrapper);  // 默认地址可有可无
-        } else {
-            // 如果有订单，则根据订单的地址id查询地址
-            LambdaQueryWrapper<AddressBook> addressBookWrapper = new LambdaQueryWrapper<>();
-            addressBookWrapper.eq(AddressBook::getId, order.getAddressBookId()).eq(AddressBook::getUserIsDeleted, 0);
+
+        LambdaQueryWrapper<AddressBook> addressBookWrapper = new LambdaQueryWrapper<>();
+        // 查询订单的地址
+        if (order != null) {
+            addressBookWrapper.eq(AddressBook::getId, order.getAddressBookId()).eq(AddressBook::getUserIsDeleted, false);
             address = getOne(addressBookWrapper);  // 该地址可能被删除
+        }
+        // 如果没有订单或者订单的地址被用户删除，则查询默认地址
+        if (order == null || address == null) {
+            addressBookWrapper.eq(AddressBook::getUserId, userId).eq(AddressBook::getIsDefault, true)
+                    .eq(AddressBook::getUserIsDeleted, false).last("LIMIT 1");
+            address = getOne(addressBookWrapper);  // 默认地址可有可无
         }
         return address;
     }
@@ -80,7 +81,7 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
     @Override
     public void removeAddressById(Long id) {
         LambdaUpdateWrapper<AddressBook> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(AddressBook::getId, id).set(AddressBook::getUserIsDeleted, 1);
+        wrapper.eq(AddressBook::getId, id).set(AddressBook::getUserIsDeleted, true);
         update(wrapper);
     }
 
@@ -91,10 +92,10 @@ public class AddressBookServiceImpl extends ServiceImpl<AddressBookMapper, Addre
      */
     private void updateOtherAddressDefault(AddressBook address) {
         // 如果该地址是默认地址，需要将该用户下的其他地址改为非默认地址
-        if (address.getIsDefault() == 1) {
+        if (address.getIsDefault()) {
             LambdaUpdateWrapper<AddressBook> wrapper = new LambdaUpdateWrapper<>();
-            wrapper.set(AddressBook::getIsDefault, 0)
-                    .eq(AddressBook::getUserId, address.getUserId()).eq(AddressBook::getIsDefault, 1).eq(AddressBook::getUserIsDeleted, 0)
+            wrapper.set(AddressBook::getIsDefault, false)
+                    .eq(AddressBook::getUserId, address.getUserId()).eq(AddressBook::getIsDefault, true).eq(AddressBook::getUserIsDeleted, false)
                     .notIn(AddressBook::getId, address.getId());
             update(wrapper);
         }
